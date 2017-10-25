@@ -7,6 +7,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -26,10 +27,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -41,6 +48,7 @@ public class MainActivity extends AppCompatActivity
 
     private RecyclerView horizontal_branches_recycler_view,horizontal_dinner_recycler_view;
     private ArrayList<String> horizontalList;
+    private ArrayList<Venue> breakfastShops= new ArrayList<>();
     private HorizontalAdapter horizontalAdapter;
 
     List<Address> addresses = null;
@@ -91,6 +99,8 @@ public class MainActivity extends AppCompatActivity
         }
 
 
+
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -111,22 +121,15 @@ public class MainActivity extends AppCompatActivity
             ActivityCompat.requestPermissions(this, new String[] {  android.Manifest.permission.ACCESS_COARSE_LOCATION  },11);
         }
 
+        FetchVenuesTask task = new FetchVenuesTask();
+        task.execute();
 
         horizontal_branches_recycler_view= (RecyclerView) findViewById(R.id.horizontal_recycler_view);
         horizontal_dinner_recycler_view= (RecyclerView) findViewById(R.id.horizontal_dinner_recycler_view);
 
-        horizontalList=new ArrayList<>();
-        horizontalList.add("horizontal 1");
-        horizontalList.add("horizontal 2");
-        horizontalList.add("horizontal 3");
-        horizontalList.add("horizontal 4");
-        horizontalList.add("horizontal 5");
-        horizontalList.add("horizontal 6");
-        horizontalList.add("horizontal 7");
-        horizontalList.add("horizontal 8");
-        horizontalList.add("horizontal 9");
-        horizontalList.add("horizontal 10");
-        horizontalAdapter=new HorizontalAdapter(horizontalList);
+
+
+        horizontalAdapter=new HorizontalAdapter(breakfastShops);
 
         LinearLayoutManager horizontalLayoutManagaer
                 = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
@@ -226,20 +229,24 @@ public class MainActivity extends AppCompatActivity
 
     public class HorizontalAdapter extends RecyclerView.Adapter<HorizontalAdapter.MyViewHolder> {
 
-        private List<String> horizontalList;
+        private List<Venue> horizontalList;
 
         public class MyViewHolder extends RecyclerView.ViewHolder {
-            public TextView txtView;
+            public TextView shopTextView,addressTextView,isOpenTextView;
+            public RatingBar ratingBar;
 
             public MyViewHolder(View view) {
                 super(view);
-                txtView = (TextView) view.findViewById(R.id.txtView1);
+                shopTextView = (TextView) view.findViewById(R.id.shopNameTextView);
+                addressTextView = (TextView) view.findViewById(R.id.addressTextVie);
+                isOpenTextView = (TextView) view.findViewById(R.id.isOpenTextView);
+                ratingBar=(RatingBar)view.findViewById(R.id.ratingBar);
 
             }
         }
 
 
-        public HorizontalAdapter(List<String> horizontalList) {
+        public HorizontalAdapter(List<Venue> horizontalList) {
             this.horizontalList = horizontalList;
         }
 
@@ -253,14 +260,14 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public void onBindViewHolder(final MyViewHolder holder, final int position) {
-            holder.txtView.setText(horizontalList.get(position));
+            holder.shopTextView.setText(horizontalList.get(position).getName());
+            holder.addressTextView.setText(horizontalList.get(position).getAddress());
+            boolean isOpen= horizontalList.get(position).isOpen();
+            if(isOpen)
+                holder.isOpenTextView.setText("Open");
+            else
+                holder.isOpenTextView.setText("Close");
 
-            holder.txtView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(MainActivity.this,holder.txtView.getText().toString(),Toast.LENGTH_SHORT).show();
-                }
-            });
         }
 
         @Override
@@ -268,4 +275,96 @@ public class MainActivity extends AppCompatActivity
             return horizontalList.size();
         }
     }
+
+
+    public class FetchVenuesTask extends AsyncTask<String, Void, ArrayList<Venue>> {
+
+        @Override
+        protected  ArrayList<Venue> doInBackground(String... params) {
+
+            return fetchBreakfastStoresData();
+        }
+
+
+        @Override
+        protected void onPostExecute(ArrayList<Venue> venues) {
+            if(venues != null){
+                horizontalAdapter.clear();
+                for(Venue vn : venues){
+                    horizontalAdapter.add(vn);
+                }
+            }
+        }
+
+
+        private ArrayList<Venue> fetchBreakfastStoresData() {
+
+            // These two need to be declared outside the try/catch
+            // so that they can be closed in the finally block.
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
+
+            // Will contain the raw JSON response as a string.
+            String forecastJsonStr = null;
+
+            try {
+                // Construct the URL for the OpenWeatherMap query
+                // Possible parameters are avaiable at OWM's forecast API page, at
+                // http://openweathermap.org/API#forecast
+                //MODIFIED FOR CITY OF THESSALONIKI, GREECE
+                URL url = new URL("https://api.foursquare.com/v2/venues/explore?v=20161016&ll="+latitude+"%2C%20"+longitude+"&query=breakfast&radius=3000&limit=10&client_id=VG2QOOJOVR1ALCMP5DBG2QDT3G31U3WJELPPZWUAZP21SFZC&client_secret=SIHMHQV5YEKERQWDP3G5UKWY22RDZ1DOQCKW2STQKYAGDLNA");
+
+                // Create the request to OpenWeatherMap, and open the connection
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+
+                // Read the input stream into a String
+                InputStream inputStream = urlConnection.getInputStream();
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                    // Nothing to do.
+                }
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                    // But it does make debugging a *lot* easier if you print out the completed
+                    // buffer for debugging.
+                    buffer.append(line + "\n");
+                }
+
+                if (buffer.length() == 0) {
+                    // Stream was empty.  No point in parsing.
+                }
+                forecastJsonStr = buffer.toString();
+
+                breakfastShops=VenueJsonParser.getBreakfastShopsfromJson(forecastJsonStr);
+
+                return breakfastShops;
+
+
+            } catch (IOException e) {
+                Log.e("PlaceholderFragment", "Error ", e);
+                // If the code didn't successfully get the weather data, there's no point in attemping
+                // to parse it.
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (final IOException e) {
+                        Log.e("PlaceholderFragment", "Error closing stream", e);
+                    }
+                }
+            }
+
+            return breakfastShops;
+        }
+    }
+
+
 }
