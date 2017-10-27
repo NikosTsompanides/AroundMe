@@ -56,7 +56,7 @@
                             android:paddingBottom="20dp"
                             android:paddingLeft="10dp"
                             android:paddingTop="20dp"
-                            android:text="Most Delicious Branches!"
+                            android:text="Top Food Places Around You !"
                             android:textAlignment="viewStart"
                             android:textColor="#f94878"
                             android:textSize="18sp"
@@ -65,9 +65,9 @@
                     </LinearLayout>
 
                     <android.support.v7.widget.RecyclerView
-                        android:id="@+id/horizontal_recycler_view"
+                        android:id="@+id/horizontal_food_recycler_view"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:background="@android:color/transparent" />
                 </LinearLayout>
 
@@ -91,7 +91,7 @@
                             android:paddingBottom="20dp"
                             android:paddingLeft="10dp"
                             android:paddingTop="20dp"
-                            android:text="Most Delicious Dinners!"
+                            android:text="Top Coffee Places Around You!"
                             android:textAlignment="viewStart"
                             android:textColor="#f94878"
                             android:textSize="18sp"
@@ -100,9 +100,44 @@
                     </LinearLayout>
 
                     <android.support.v7.widget.RecyclerView
-                        android:id="@+id/horizontal_dinner_recycler_view"
+                        android:id="@+id/horizontal_coffee_recycler_view"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/transparent" />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/drinkTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.66"
+                            android:fontFamily="casual"
+                            android:paddingBottom="20dp"
+                            android:paddingLeft="10dp"
+                            android:paddingTop="20dp"
+                            android:text="Top Bars Around You!"
+                            android:textAlignment="viewStart"
+                            android:textColor="#f94878"
+                            android:textSize="18sp"
+                            android:typeface="normal" />
+
+                    </LinearLayout>
+
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/horizontal_drinks_recycler_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         android:background="@android:color/transparent" />
                 </LinearLayout>
 

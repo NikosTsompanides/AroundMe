@@ -9,27 +9,40 @@ import java.util.ArrayList;
 
 public class Venue {
 
-    private long venueId;
-    private int rating,likes;
+    private long venueId,lat,lng;
+    private int rating,chekInsCount;
     private ArrayList<Double> hours;
-    private String Name,Description,url,address;
+    private String Name,Description,url,address,image,phone;
     private ArrayList<String> categories,photos;
     private ArrayList<Integer> stats;
     private boolean isOpen;
+    private int distance;
 
 
-
-    public Venue(long venueId, int rating, int likes, ArrayList<Double> hours, String name, String description, String url, ArrayList<String> categories, ArrayList<String> photos, ArrayList<Integer> stats) {
+    public Venue(long venueId, long lat, long lng, int rating, int chekInsCount, ArrayList<Double> hours, String name, String description, String url, String address, String image, int priceTier, String priceMessage, String priceCurrency, ArrayList<String> categories, ArrayList<String> photos, ArrayList<Integer> stats, boolean isOpen) {
         this.venueId = venueId;
+        this.lat = lat;
+        this.lng = lng;
         this.rating = rating;
-        this.likes = likes;
+        this.chekInsCount = chekInsCount;
         this.hours = hours;
         Name = name;
         Description = description;
         this.url = url;
+        this.address = address;
+        this.image = image;
         this.categories = categories;
         this.photos = photos;
         this.stats = stats;
+        this.isOpen = isOpen;
+    }
+
+    public Venue(int rating, String name, String address, boolean isOpen, String image) {
+        this.rating = rating;
+        Name = name;
+        this.address = address;
+        this.isOpen = isOpen;
+        this.image=image;
     }
 
     public Venue(int rating, String name, String address, boolean isOpen) {
@@ -37,6 +50,26 @@ public class Venue {
         Name = name;
         this.address = address;
         this.isOpen = isOpen;
+    }
+
+    public Venue(long lat, long lng, int rating, int chekInsCount, String name, String address,boolean isOpen,String phone,int distance) {
+        this.lat = lat;
+        this.lng = lng;
+        this.rating = rating;
+        this.chekInsCount = chekInsCount;
+        Name = name;
+        this.address = address;
+        this.isOpen = isOpen;
+        this.distance=distance;
+        this.phone=phone;
+    }
+
+    public int getDistance() {
+        return distance;
+    }
+
+    public void setDistance(int distance) {
+        this.distance = distance;
     }
 
     public long getVenueId() {
@@ -53,14 +86,6 @@ public class Venue {
 
     public void setRating(int rating) {
         this.rating = rating;
-    }
-
-    public int getLikes() {
-        return likes;
-    }
-
-    public void setLikes(int likes) {
-        this.likes = likes;
     }
 
     public ArrayList<Double> getHours() {
@@ -134,4 +159,49 @@ public class Venue {
     public void setOpen(boolean open) {
         isOpen = open;
     }
+
+    public long getLat() {
+        return lat;
+    }
+
+    public long getLng() {
+        return lng;
+    }
+
+    public int getChekInsCount() {
+        return chekInsCount;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+
+
+    public void setLat(long lat) {
+        this.lat = lat;
+    }
+
+    public void setLng(long lng) {
+        this.lng = lng;
+    }
+
+    public void setChekInsCount(int chekInsCount) {
+        this.chekInsCount = chekInsCount;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+
 }

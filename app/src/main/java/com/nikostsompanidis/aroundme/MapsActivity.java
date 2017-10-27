@@ -81,25 +81,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Customise the styling of the base map using a JSON object defined
-        // in a string resource file. First create a MapStyleOptions object
-        // from the JSON styles string, then pass this to the setMapStyle
-        // method of the GoogleMap object.
-
-        /*try {
-            // Customise the styling of the base map using a JSON object defined
-            // in a raw resource file.
-            boolean success = googleMap.setMapStyle(
-                    MapStyleOptions.loadRawResourceStyle(
-                            this, R.raw.style_json));
-
-            if (!success) {
-                Log.e("", "Style parsing failed.");
-            }
-        } catch (Resources.NotFoundException e) {
-            Log.e("", "Can't find style. Error: ", e);
-        }*/
-        // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(latitude, longitude);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 12.0f));
