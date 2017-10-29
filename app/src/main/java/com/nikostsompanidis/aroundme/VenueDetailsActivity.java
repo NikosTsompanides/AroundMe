@@ -1,12 +1,15 @@
 package com.nikostsompanidis.aroundme;
 
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
@@ -17,15 +20,19 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.InputStream;
+import java.net.URL;
+
 public class VenueDetailsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private int rating,chekInsCount,priceTier,distance;
-    private String name,address,phone;
-    private long lat,lng;
+    private String name,address,phone,image;
+    private double lat,lng;
     private boolean isOpen;
     private GoogleMap mMap;
     private RatingBar ratingBar;
     private TextView checkInsCount,Name,Address,Phone,IsOpen,Distance;
+    private ImageView Image ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +40,7 @@ public class VenueDetailsActivity extends AppCompatActivity implements OnMapRead
         setContentView(R.layout.activity_venue_details);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map2);
@@ -47,6 +55,11 @@ public class VenueDetailsActivity extends AppCompatActivity implements OnMapRead
             }
         });
 
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.hide();
+        }
+
         ratingBar = (RatingBar) findViewById(R.id.ratingBar2);
         checkInsCount = (TextView) findViewById(R.id.checkInTextView);
         Name = (TextView) findViewById(R.id.shopNameDetailsTextView);
@@ -54,6 +67,8 @@ public class VenueDetailsActivity extends AppCompatActivity implements OnMapRead
         Phone = (TextView) findViewById(R.id.phoneTextView);
         IsOpen = (TextView) findViewById(R.id.IsOpenTextView);
         Distance=(TextView) findViewById(R.id.distanceTextView);
+        Image = (ImageView)findViewById(R.id.detailsImageView) ;
+
 
 
 
@@ -66,13 +81,17 @@ public class VenueDetailsActivity extends AppCompatActivity implements OnMapRead
             phone = extras.getString("phone");
             rating = extras.getInt("rating");
             chekInsCount = extras.getInt("checkInCount");
-            lat = extras.getLong("lat");
-            lng = extras.getLong("lng");
+            lat = extras.getDouble("lat");
+            lng = extras.getDouble("lng");
             isOpen = extras.getBoolean("isOpen");
             distance=extras.getInt("distance");
+            image=extras.getString("image");
         }
 
         toolbar.setTitle("Details: "+Name);
+
+
+        Image.setBackground(this.LoadImageFromWebOperations(image));
 
         ratingBar.setRating(rating);
         checkInsCount.setText("People Visits: "+chekInsCount);
@@ -87,14 +106,15 @@ public class VenueDetailsActivity extends AppCompatActivity implements OnMapRead
             Phone.setText(""+phone);
         if(isOpen){
             IsOpen.setText("Open");
-            IsOpen.setTextColor(Color.GREEN);
+            IsOpen.setTextColor(Color.parseColor("#00E676"));
         }
         else{
             IsOpen.setText("Close");
-            IsOpen.setTextColor(Color.RED);
+            IsOpen.setTextColor(Color.parseColor("#FF3D00"));
         }
 
         Distance.setText(Distance.getText()+""+(double)distance/1000+" km");
+        Image.setImageDrawable(this.LoadImageFromWebOperations(image));
 
 
 
@@ -105,8 +125,18 @@ public class VenueDetailsActivity extends AppCompatActivity implements OnMapRead
 
         LatLng marker = new LatLng(lat, lng);
         mMap.addMarker(new MarkerOptions().position(marker).title(name.toString()));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 8.0f));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 14.0f));
 
+    }
+
+    public static Drawable LoadImageFromWebOperations(String url) {
+        try {
+            InputStream is = (InputStream) new URL(url).getContent();
+            Drawable d = Drawable.createFromStream(is, "src name");
+            return d;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 }

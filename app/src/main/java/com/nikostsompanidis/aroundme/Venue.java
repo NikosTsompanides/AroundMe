@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 public class Venue {
 
-    private long venueId,lat,lng;
+    private long venueId;
     private int rating,chekInsCount;
     private ArrayList<Double> hours;
     private String Name,Description,url,address,image,phone;
@@ -17,9 +17,10 @@ public class Venue {
     private ArrayList<Integer> stats;
     private boolean isOpen;
     private int distance;
+    private double lat,lng;
 
 
-    public Venue(long venueId, long lat, long lng, int rating, int chekInsCount, ArrayList<Double> hours, String name, String description, String url, String address, String image, int priceTier, String priceMessage, String priceCurrency, ArrayList<String> categories, ArrayList<String> photos, ArrayList<Integer> stats, boolean isOpen) {
+    public Venue(long venueId, double lat, double lng, int rating, int chekInsCount, ArrayList<Double> hours, String name, String description, String url, String address, String image, int priceTier, String priceMessage, String priceCurrency, ArrayList<String> categories, ArrayList<String> photos, ArrayList<Integer> stats, boolean isOpen) {
         this.venueId = venueId;
         this.lat = lat;
         this.lng = lng;
@@ -52,7 +53,7 @@ public class Venue {
         this.isOpen = isOpen;
     }
 
-    public Venue(long lat, long lng, int rating, int chekInsCount, String name, String address,boolean isOpen,String phone,int distance) {
+    public Venue(double lat, double lng, int rating, int chekInsCount, String name, String address,boolean isOpen,String phone,int distance,String image) {
         this.lat = lat;
         this.lng = lng;
         this.rating = rating;
@@ -62,6 +63,7 @@ public class Venue {
         this.isOpen = isOpen;
         this.distance=distance;
         this.phone=phone;
+        this.image=image;
     }
 
     public int getDistance() {
@@ -160,11 +162,11 @@ public class Venue {
         isOpen = open;
     }
 
-    public long getLat() {
+    public double getLat() {
         return lat;
     }
 
-    public long getLng() {
+    public double getLng() {
         return lng;
     }
 

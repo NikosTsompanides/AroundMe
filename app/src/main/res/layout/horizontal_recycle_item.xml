@@ -24,13 +24,12 @@
             android:weightSum="1">
 
             <ImageView
-                android:id="@+id/imageView2"
+                android:id="@+id/itemImageView"
                 android:layout_width="wrap_content"
                 android:layout_height="120dp"
                 android:layout_weight="0.20"
                 android:background="@drawable/roundcorner"
-                android:scaleType="fitXY"
-                app:srcCompat="@drawable/hero_image" />
+                android:scaleType="fitXY" />
 
             <LinearLayout
                 android:layout_width="match_parent"

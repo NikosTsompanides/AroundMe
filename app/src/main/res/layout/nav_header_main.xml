@@ -14,24 +14,30 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="wrap_content"
+        android:layout_width="69dp"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
-        app:srcCompat="@android:drawable/sym_def_app_icon" />
+        app:srcCompat="@drawable/ic_account_circle_white_48dp" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fontFamily="casual"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
         android:text="Around Me !"
         android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-        android:textColor="#14e6dd" />
+        android:textColor="#f94878"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Find everything around you !"
-        android:textColor="#14e6dd" />
+        android:fontFamily="casual"
+        android:text="Find the best places around you !"
+        android:textColor="#f94878"
+        android:textSize="14sp"
+        android:textStyle="bold" />
 
 </LinearLayout>

@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:minHeight="?android:attr/listPreferredItemHeightSmall"
+
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.nikostsompanidis.aroundme.VenueDetailsActivity"
     tools:showIn="@layout/activity_venue_details">
@@ -19,7 +21,7 @@
             android:orientation="vertical">
 
             <ImageView
-                android:id="@+id/imageView4"
+                android:id="@+id/detailsImageView"
                 android:layout_width="wrap_content"
                 android:layout_height="198dp"
                 android:scaleType="centerCrop"
@@ -86,10 +88,10 @@
                     style="@style/Widget.AppCompat.RatingBar.Small"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_weight="0.06"
                     android:isIndicator="false"
                     android:numStars="10"
-                    android:paddingLeft="5dp"
-                    android:layout_weight="0.06" />
+                    android:paddingLeft="5dp" />
             </LinearLayout>
 
             <Space
@@ -134,7 +136,7 @@
                 <TextView
                     android:id="@+id/addressTextView"
                     android:layout_width="181dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:paddingLeft="5dp"
                     android:text="TextView"
                     android:textSize="22sp" />

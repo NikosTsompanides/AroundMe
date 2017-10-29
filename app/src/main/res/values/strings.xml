@@ -12,5 +12,9 @@
     <string name="title_activity_log_in">LogInActivity</string>
     <string name="title_activity_venue_details">VenueDetailsActivity</string>
 
+    <string name="title_activity_initial_fullscreen">InitialFullscreenActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+
 
 </resources>

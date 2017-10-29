@@ -2,6 +2,7 @@ package com.nikostsompanidis.aroundme;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.AsyncTask;
@@ -24,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
@@ -42,11 +44,21 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
 
-    private RecyclerView horizontal_food_recycler_view,horizontal_coffee_recycler_view,horizontal_drinks_recycler_view;
+    private RecyclerView horizontal_food_recycler_view,horizontal_coffee_recycler_view,horizontal_drinks_recycler_view,horizontal_arts_recycler_view,horizontal_outdoors_recycler_view,horizontal_top_picks_recycler_view;
     private ArrayList<Venue> foodShops = new ArrayList<>();
     private ArrayList<Venue> coffeeShops = new ArrayList<>();
     private ArrayList<Venue> bars = new ArrayList<>();
-    private HorizontalAdapter foodAdapter,coffeeAdapter,drinksAdapter;
+    private ArrayList<Venue> arts = new ArrayList<>();
+    private ArrayList<Venue> topPicks = new ArrayList<>();
+    private ArrayList<Venue> outdoors = new ArrayList<>();
+    private HorizontalAdapter foodAdapter,coffeeAdapter,drinksAdapter,artsAdapetr,topPicksAdapter,outdoorsAdapter;
+
+
+    private int rating,chekInsCount,priceTier,distance;
+    private String name,priceMessage,priceCurrency,address,phone,image;
+    private double lati,lngi;
+    private boolean isOpen;
+
 
     List<Address> addresses = new ArrayList<Address>();
 
@@ -146,15 +158,265 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
 
-        horizontal_food_recycler_view= (RecyclerView) findViewById(R.id.horizontal_food_recycler_view);
-        horizontal_coffee_recycler_view= (RecyclerView) findViewById(R.id.horizontal_coffee_recycler_view);
-        horizontal_drinks_recycler_view= (RecyclerView) findViewById(R.id.horizontal_drinks_recycler_view);
+        FetchVenuesTask artTask = new FetchVenuesTask("arts");
+        try {
+            arts=artTask.execute().get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 
+        FetchVenuesTask topPicksTask = new FetchVenuesTask("topPicks");
+        try {
+            topPicks=topPicksTask.execute().get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        FetchVenuesTask outdoorsTask = new FetchVenuesTask("outdoors");
+        try {
+            outdoors=outdoorsTask.execute().get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+
+        horizontal_top_picks_recycler_view= (RecyclerView) findViewById(R.id.horizontal_top_picks_recycler_view);
+        horizontal_top_picks_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_top_picks_recycler_view ,new RecyclerItemClickListener.OnItemClickListener() {
+            @Override public void onItemClick(View view, int position) {
+
+                address= topPicks.get(position).getAddress();
+                rating= topPicks.get(position).getRating();
+                lati= topPicks.get(position).getLat();
+                lngi= topPicks.get(position).getLng();
+                name= topPicks.get(position).getName();
+                chekInsCount= topPicks.get(position).getChekInsCount();
+                isOpen= topPicks.get(position).isOpen();
+                phone= topPicks.get(position).getPhone();
+                distance= topPicks.get(position).getDistance();
+                image=topPicks.get(position).getImage();
+
+                Intent i = new Intent(getBaseContext(),VenueDetailsActivity.class);
+                i.putExtra("name",name);
+                i.putExtra("checkInCount",chekInsCount);
+                i.putExtra("isOpen",isOpen);
+                i.putExtra("priceTier",priceTier);
+                i.putExtra("priceMessage",priceMessage);
+                i.putExtra("priceCurrency",priceCurrency);
+                i.putExtra("rating",rating);
+                i.putExtra("address",address);
+                i.putExtra("phone",phone);
+                i.putExtra("lat",lati);
+                i.putExtra("lng",lngi);
+                Log.i("Address"," Lat: "+lati+" Lng: "+lngi);
+                i.putExtra("distance",distance);
+                i.putExtra("image",image);
+                startActivity(i);            }
+
+            @Override public void onLongItemClick(View view, int position) {
+                // do whatever
+            }
+        }));
+
+
+        horizontal_food_recycler_view= (RecyclerView) findViewById(R.id.horizontal_food_recycler_view);
+        horizontal_food_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_food_recycler_view ,new RecyclerItemClickListener.OnItemClickListener() {
+            @Override public void onItemClick(View view, int position) {
+
+                address= foodShops.get(position).getAddress();
+                rating= foodShops.get(position).getRating();
+                lati= foodShops.get(position).getLat();
+                lngi= foodShops.get(position).getLng();
+                name= foodShops.get(position).getName();
+                chekInsCount= foodShops.get(position).getChekInsCount();
+                isOpen= foodShops.get(position).isOpen();
+                phone= foodShops.get(position).getPhone();
+                distance= foodShops.get(position).getDistance();
+                image=foodShops.get(position).getImage();
+
+                Intent i = new Intent(getBaseContext(),VenueDetailsActivity.class);
+                i.putExtra("name",name);
+                i.putExtra("checkInCount",chekInsCount);
+                i.putExtra("isOpen",isOpen);
+                i.putExtra("priceTier",priceTier);
+                i.putExtra("priceMessage",priceMessage);
+                i.putExtra("priceCurrency",priceCurrency);
+                i.putExtra("rating",rating);
+                i.putExtra("address",address);
+                i.putExtra("phone",phone);
+                i.putExtra("lat",lati);
+                i.putExtra("lng",lngi);
+                Log.i("Address"," Lat: "+lati+" Lng: "+lngi);
+                i.putExtra("distance",distance);
+                i.putExtra("image",image);
+                startActivity(i);            }
+
+            @Override public void onLongItemClick(View view, int position) {
+                // do whatever
+            }
+        }));
+
+        horizontal_coffee_recycler_view= (RecyclerView) findViewById(R.id.horizontal_coffee_recycler_view);
+        horizontal_coffee_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_coffee_recycler_view ,new RecyclerItemClickListener.OnItemClickListener() {
+            @Override public void onItemClick(View view, int position) {
+
+                address= coffeeShops.get(position).getAddress();
+                rating= coffeeShops.get(position).getRating();
+                lati= coffeeShops.get(position).getLat();
+                lngi= coffeeShops.get(position).getLng();
+                name= coffeeShops.get(position).getName();
+                chekInsCount= coffeeShops.get(position).getChekInsCount();
+                isOpen= coffeeShops.get(position).isOpen();
+                phone= coffeeShops.get(position).getPhone();
+                distance= coffeeShops.get(position).getDistance();
+                image=foodShops.get(position).getImage();
+
+                Intent i = new Intent(getBaseContext(),VenueDetailsActivity.class);
+                i.putExtra("name",name);
+                i.putExtra("checkInCount",chekInsCount);
+                i.putExtra("isOpen",isOpen);
+                i.putExtra("priceTier",priceTier);
+                i.putExtra("priceMessage",priceMessage);
+                i.putExtra("priceCurrency",priceCurrency);
+                i.putExtra("rating",rating);
+                i.putExtra("address",address);
+                i.putExtra("phone",phone);
+                i.putExtra("lat",lati);
+                i.putExtra("lng",lngi);
+                i.putExtra("distance",distance);
+                i.putExtra("image",image);
+                startActivity(i);            }
+
+            @Override public void onLongItemClick(View view, int position) {
+                // do whatever
+            }
+        }));
+
+
+        horizontal_drinks_recycler_view= (RecyclerView) findViewById(R.id.horizontal_drinks_recycler_view);
+        horizontal_drinks_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_drinks_recycler_view ,new RecyclerItemClickListener.OnItemClickListener() {
+            @Override public void onItemClick(View view, int position) {
+
+                address= bars.get(position).getAddress();
+                rating= bars.get(position).getRating();
+                lati= bars.get(position).getLat();
+                lngi= bars.get(position).getLng();
+                name= bars.get(position).getName();
+                chekInsCount= bars.get(position).getChekInsCount();
+
+                isOpen= bars.get(position).isOpen();
+                phone= bars.get(position).getPhone();
+                distance= bars.get(position).getDistance();
+                image=foodShops.get(position).getImage();
+
+                Intent i = new Intent(getBaseContext(),VenueDetailsActivity.class);
+                i.putExtra("name",name);
+                i.putExtra("checkInCount",chekInsCount);
+                i.putExtra("isOpen",isOpen);
+                i.putExtra("priceTier",priceTier);
+                i.putExtra("priceMessage",priceMessage);
+                i.putExtra("priceCurrency",priceCurrency);
+                i.putExtra("rating",rating);
+                i.putExtra("address",address);
+                i.putExtra("phone",phone);
+                i.putExtra("lat",lati);
+                i.putExtra("lng",lngi);
+                i.putExtra("distance",distance);
+                i.putExtra("image",image);
+                startActivity(i);            }
+
+            @Override public void onLongItemClick(View view, int position) {
+                // do whatever
+            }
+        }));
+
+        horizontal_arts_recycler_view= (RecyclerView) findViewById(R.id.horizontal_arts_recycler_view);
+        horizontal_arts_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_arts_recycler_view ,new RecyclerItemClickListener.OnItemClickListener() {
+            @Override public void onItemClick(View view, int position) {
+
+                address= arts.get(position).getAddress();
+                rating= arts.get(position).getRating();
+                lati= arts.get(position).getLat();
+                lngi= arts.get(position).getLng();
+                name= arts.get(position).getName();
+                chekInsCount= arts.get(position).getChekInsCount();
+
+                isOpen= arts.get(position).isOpen();
+                phone= arts.get(position).getPhone();
+                distance= arts.get(position).getDistance();
+                image=arts.get(position).getImage();
+
+                Intent i = new Intent(getBaseContext(),VenueDetailsActivity.class);
+                i.putExtra("name",name);
+                i.putExtra("checkInCount",chekInsCount);
+                i.putExtra("isOpen",isOpen);
+                i.putExtra("priceTier",priceTier);
+                i.putExtra("priceMessage",priceMessage);
+                i.putExtra("priceCurrency",priceCurrency);
+                i.putExtra("rating",rating);
+                i.putExtra("address",address);
+                i.putExtra("phone",phone);
+                i.putExtra("lat",lati);
+                i.putExtra("lng",lngi);
+                i.putExtra("distance",distance);
+                i.putExtra("image",image);
+                startActivity(i);            }
+
+            @Override public void onLongItemClick(View view, int position) {
+                // do whatever
+            }
+        }));
+
+
+        horizontal_outdoors_recycler_view= (RecyclerView) findViewById(R.id.horizontal_outdoors_recycler_view);
+        horizontal_outdoors_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_outdoors_recycler_view ,new RecyclerItemClickListener.OnItemClickListener() {
+            @Override public void onItemClick(View view, int position) {
+
+                address= outdoors.get(position).getAddress();
+                rating= outdoors.get(position).getRating();
+                lati= outdoors.get(position).getLat();
+                lngi= outdoors.get(position).getLng();
+                name= outdoors.get(position).getName();
+                chekInsCount= outdoors.get(position).getChekInsCount();
+
+                isOpen= outdoors.get(position).isOpen();
+                phone= outdoors.get(position).getPhone();
+                distance= outdoors.get(position).getDistance();
+                image=outdoors.get(position).getImage();
+
+                Intent i = new Intent(getBaseContext(),VenueDetailsActivity.class);
+                i.putExtra("name",name);
+                i.putExtra("checkInCount",chekInsCount);
+                i.putExtra("isOpen",isOpen);
+                i.putExtra("priceTier",priceTier);
+                i.putExtra("priceMessage",priceMessage);
+                i.putExtra("priceCurrency",priceCurrency);
+                i.putExtra("rating",rating);
+                i.putExtra("address",address);
+                i.putExtra("phone",phone);
+                i.putExtra("lat",lati);
+                i.putExtra("lng",lngi);
+                i.putExtra("distance",distance);
+                i.putExtra("image",image);
+                startActivity(i);            }
+
+            @Override public void onLongItemClick(View view, int position) {
+                // do whatever
+            }
+        }));
 
 
         foodAdapter=new HorizontalAdapter(foodShops);
         coffeeAdapter=new HorizontalAdapter(coffeeShops);
         drinksAdapter= new HorizontalAdapter(bars);
+        artsAdapetr=new HorizontalAdapter(arts);
+        topPicksAdapter= new HorizontalAdapter(topPicks);
+        outdoorsAdapter= new HorizontalAdapter(outdoors);
 
         LinearLayoutManager horizontalLayoutManagaer
                 = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
@@ -175,6 +437,28 @@ public class MainActivity extends AppCompatActivity
         horizontal_drinks_recycler_view.setLayoutManager(horizontalLayoutManagerDrinks);
 
         horizontal_drinks_recycler_view.setAdapter(drinksAdapter);
+
+        LinearLayoutManager horizontalLayoutManagerArts
+                = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
+
+        horizontal_arts_recycler_view.setLayoutManager(horizontalLayoutManagerArts);
+
+        horizontal_arts_recycler_view.setAdapter(artsAdapetr);
+
+
+        LinearLayoutManager horizontalLayoutManagerTopPicks
+                = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
+
+        horizontal_top_picks_recycler_view.setLayoutManager(horizontalLayoutManagerTopPicks);
+
+        horizontal_top_picks_recycler_view.setAdapter(topPicksAdapter);
+
+        LinearLayoutManager horizontalLayoutManagerOutdoors
+                = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
+
+        horizontal_outdoors_recycler_view.setLayoutManager(horizontalLayoutManagerOutdoors);
+
+        horizontal_outdoors_recycler_view.setAdapter(outdoorsAdapter);
 
     }
 
@@ -260,18 +544,16 @@ public class MainActivity extends AppCompatActivity
 
 
     public class HorizontalAdapter extends RecyclerView.Adapter<HorizontalAdapter.MyViewHolder> {
-
         private List<Venue> horizontalList;
+
         private View mView;
 
-        private int rating,chekInsCount,priceTier,distance;
-        private String name,priceMessage,priceCurrency,address,phone;
-        private long lati,lngi;
-        private boolean isOpen;
+
 
         public class MyViewHolder extends RecyclerView.ViewHolder {
             public TextView shopTextView,addressTextView,isOpenTextView;
             public RatingBar ratingBar;
+            public ImageView image;
 
             public MyViewHolder(View view) {
                 super(view);
@@ -280,26 +562,7 @@ public class MainActivity extends AppCompatActivity
                 addressTextView = (TextView) mView.findViewById(R.id.addressTextVie);
                 isOpenTextView = (TextView) mView.findViewById(R.id.isOpenTextView);
                 ratingBar=(RatingBar)mView.findViewById(R.id.ratingBar);
-
-                mView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Intent i = new Intent(getBaseContext(),VenueDetailsActivity.class);
-                        i.putExtra("name",name);
-                        i.putExtra("checkInCount",chekInsCount);
-                        i.putExtra("isOpen",isOpen);
-                        i.putExtra("priceTier",priceTier);
-                        i.putExtra("priceMessage",priceMessage);
-                        i.putExtra("priceCurrency",priceCurrency);
-                        i.putExtra("rating",rating);
-                        i.putExtra("address",address);
-                        i.putExtra("phone",phone);
-                        i.putExtra("lat",lati);
-                        i.putExtra("lng",lngi);
-                        i.putExtra("distance",distance);
-                        startActivity(i);
-                    }
-                });
+                image=(ImageView)mView.findViewById(R.id.itemImageView);
 
             }
         }
@@ -321,6 +584,7 @@ public class MainActivity extends AppCompatActivity
         public void onBindViewHolder(final MyViewHolder holder, final int position) {
 
             holder.shopTextView.setText(horizontalList.get(position).getName());
+            holder.image.setImageDrawable(VenueDetailsActivity.LoadImageFromWebOperations(horizontalList.get(position).getImage()));
             holder.addressTextView.setText(horizontalList.get(position).getAddress());
             boolean isOpen= horizontalList.get(position).isOpen();
             if(isOpen)
@@ -328,17 +592,7 @@ public class MainActivity extends AppCompatActivity
             else
                 holder.isOpenTextView.setText("Close");
             holder.ratingBar.setRating(horizontalList.get(position).getRating());
-            Log.i("Venue:",horizontalList.get(position).getName()+" Position: "+position);
-            address=horizontalList.get(position).getAddress();
-            rating=horizontalList.get(position).getRating();
-            lati=horizontalList.get(position).getLat();
-            lngi=horizontalList.get(position).getLng();
-            name=horizontalList.get(position).getName();
-            chekInsCount=horizontalList.get(position).getChekInsCount();
 
-            isOpen=horizontalList.get(position).isOpen();
-            phone=horizontalList.get(position).getPhone();
-            distance=horizontalList.get(position).getDistance();
         }
 
         @Override
@@ -402,7 +656,7 @@ public class MainActivity extends AppCompatActivity
 
             try {
 
-                URL url = new URL("https://api.foursquare.com/v2/venues/explore?v=20161016&ll="+latitude+","+longitude+"&section="+section+"&radius=3000&limit=10&client_id=VG2QOOJOVR1ALCMP5DBG2QDT3G31U3WJELPPZWUAZP21SFZC&client_secret=SIHMHQV5YEKERQWDP3G5UKWY22RDZ1DOQCKW2STQKYAGDLNA");
+                URL url = new URL("https://api.foursquare.com/v2/venues/explore?v=20161016&ll="+latitude+","+longitude+"&section="+section+"&radius=3000&limit=10&venuePhotos=1&client_id=VG2QOOJOVR1ALCMP5DBG2QDT3G31U3WJELPPZWUAZP21SFZC&client_secret=SIHMHQV5YEKERQWDP3G5UKWY22RDZ1DOQCKW2STQKYAGDLNA");
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");

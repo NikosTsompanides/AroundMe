@@ -28,27 +28,28 @@ public class VenueJsonParser {
             Venue ven = null;
 
             for(int i =0; i< items.length(); i++){
-                String name,address,image,phone,hours;
+                String name,address,image,phone;
                 int rating,checkInCount,distance;
                 boolean isOpen;
-                long lat,lng;
+                double lat,lng;
 
 
                 JSONObject currentShop = items.optJSONObject(i);
                 JSONObject venue = currentShop.optJSONObject("venue");
                 name = venue.optString("name");
-                address=venue.optJSONObject("location").optString("address","Null");
+                address=venue.optJSONObject("location").optString("address","Oups ! The address is missing :( !");
                 isOpen=true;
                         //venue.getJSONObject("hours").getBoolean("isOpen");
                 rating=venue.optInt("rating");
                 phone=venue.optJSONObject("contact").optString("formattedPhone");
-                lat=venue.optJSONObject("location").optLong("lat",2);
-                lng=venue.optJSONObject("location").optLong("lng",2);
+                lat=venue.optJSONObject("location").optDouble("lat",2.0);
+                lng=venue.optJSONObject("location").optDouble("lng",2);
                 checkInCount=venue.optJSONObject("stats").optInt("checkinsCount");
                 distance=venue.optJSONObject("location").optInt("distance");
+                image="";
 
 
-                ven = new Venue(lat,lng,rating,checkInCount,name,address,isOpen,phone,distance);
+                ven = new Venue(lat,lng,rating,checkInCount,name,address,isOpen,phone,distance,image);
                 results.add(ven);
             }
 
