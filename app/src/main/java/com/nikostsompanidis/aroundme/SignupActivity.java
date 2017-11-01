@@ -1,6 +1,8 @@
 package com.nikostsompanidis.aroundme;
 
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -10,8 +12,16 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import static android.R.id.input;
-import static com.nikostsompanidis.aroundme.R.id.input_city;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+
 
 
 public class SignupActivity extends AppCompatActivity {
@@ -20,37 +30,22 @@ public class SignupActivity extends AppCompatActivity {
     EditText _nameText;
     EditText _emailText;
     EditText _passwordText;
-    EditText input_city;
 
     Button _signupButton;
     TextView _loginLink;
-
-    String cityName;
-    String stateName;
-    String countryName;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
 
-        Bundle extras = getIntent().getExtras();
-
-        if (extras != null) {
-            cityName = extras.getString("cityName");
-            stateName = extras.getString("stateName");
-            countryName = extras.getString("countryName");
-        }else
-            Toast.makeText(this,"Can't Find Any Location",Toast.LENGTH_SHORT);
 
         _nameText=(EditText)findViewById(R.id.input_name);
         _emailText=(EditText)findViewById(R.id.input_email);
         _passwordText=(EditText)findViewById(R.id.input_password);
         _signupButton=(Button)findViewById(R.id.btn_signup);
         _loginLink=(TextView)findViewById(R.id.link_login) ;
-        input_city=(EditText)findViewById(R.id.input_city);
-        input_city.setText(cityName.toString());
+
 
         _signupButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,6 +84,8 @@ public class SignupActivity extends AppCompatActivity {
         String password = _passwordText.getText().toString();
 
         // TODO: Implement your own signup logic here.
+        SignupActivity.BackgroundTask backgroundTask=new BackgroundTask(SignupActivity.this);
+        backgroundTask.execute("register",name,email,password);
 
         new android.os.Handler().postDelayed(
                 new Runnable() {
@@ -136,8 +133,8 @@ public class SignupActivity extends AppCompatActivity {
             _emailText.setError(null);
         }
 
-        if (password.isEmpty() || password.length() < 4 || password.length() > 10) {
-            _passwordText.setError("between 4 and 10 alphanumeric characters");
+        if (password.isEmpty() || password.length() < 6 || password.length() > 20) {
+            _passwordText.setError("between 6 and 20 alphanumeric characters");
             valid = false;
         } else {
             _passwordText.setError(null);
@@ -145,4 +142,61 @@ public class SignupActivity extends AppCompatActivity {
 
         return valid;
     }
+
+    private class BackgroundTask extends AsyncTask<String,Void,String> {
+
+        Context ctx;
+        BackgroundTask(Context ctx){
+
+            this.ctx=ctx;
+        }
+        protected String doInBackground(String... params) {
+
+            String reg_url="http://aroundme-application.000webhostapp.com/register.php";
+            String method= params[0];
+            if(method.equals("register")){
+
+
+                String name=params[1];
+                String email=params[2];
+                String password=params[3];
+
+                try {
+                    URL url= new URL(reg_url);
+                    HttpURLConnection httpURLConnection= (HttpURLConnection) url.openConnection();
+                    httpURLConnection.setRequestMethod("POST");
+                    httpURLConnection.setDoOutput(true);
+                    OutputStream os= httpURLConnection.getOutputStream();
+
+                    BufferedWriter bufferedWriter= new BufferedWriter(new OutputStreamWriter(os,"UTF-8"));
+
+                    String data= URLEncoder.encode("name", "UTF-8")+"="+URLEncoder.encode(name,"UTF-8")+"&"+
+                            URLEncoder.encode("email", "UTF-8")+"="+URLEncoder.encode(email,"UTF-8")+"&"+
+                            URLEncoder.encode("password","UTF-8")+"="+URLEncoder.encode(password,"UTF-8");
+                    bufferedWriter.write(data);
+                    bufferedWriter.flush();
+                    bufferedWriter.close();
+                    os.close();
+                    InputStream IS=httpURLConnection.getInputStream();
+                    IS.close();
+                    Log.i("Data",""+data);
+                    return "Registration success";
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Toast.makeText(getBaseContext(), ""+result, Toast.LENGTH_LONG).show();
+        }
+
+    }
+
 }

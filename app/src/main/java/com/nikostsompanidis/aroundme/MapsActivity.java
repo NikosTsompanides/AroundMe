@@ -149,6 +149,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             switch (item.getItemId()) {
                 case R.id.navigation_search:
                     Intent i = new Intent(getApplicationContext(),MainActivity.class);
+                    i.putExtra("lat",latitude);
+                    i.putExtra("lng",longitude);
                     startActivity(i);
                     return true;
                 case R.id.navigation_map:

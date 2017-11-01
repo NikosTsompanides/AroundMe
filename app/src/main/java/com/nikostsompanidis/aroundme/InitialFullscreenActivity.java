@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v7.app.ActionBar;
@@ -13,6 +15,11 @@ import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -29,7 +36,7 @@ public class InitialFullscreenActivity extends AppCompatActivity {
      * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
      * user interaction before hiding the system UI.
      */
-    private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
+    private static final int AUTO_HIDE_DELAY_MILLIS = 1000;
 
     /**
      * Some older devices needs a small delay between UI widget updates
@@ -91,11 +98,25 @@ public class InitialFullscreenActivity extends AppCompatActivity {
 
     private TextView succesTxt,failureTxt;
 
+
+    String cityName;
+    String stateName;
+    String countryName;
+
+    Double latitude=0.0 ;
+    Double longitude=0.0;
+
+    List<Address> addresses = new ArrayList<Address>();
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_initial_fullscreen);
+
+
+
 
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
@@ -114,13 +135,50 @@ public class InitialFullscreenActivity extends AppCompatActivity {
         if( netInfo != null && netInfo.isConnectedOrConnecting()){
             succesTxt.setText("Welcome to Arounde me ! \n We are loading the best places around you ! \n Please wait ...");
             succesTxt.setVisibility(TextView.VISIBLE);
-            new Handler().postDelayed(new Runnable() {
 
-                @Override
-                public void run() {
-                    startActivity(new Intent(getBaseContext(),MainActivity.class));
+            GPSTracker  gps = new GPSTracker(InitialFullscreenActivity.this);
+
+            // Check if GPS enabled
+            if(gps.canGetLocation()) {
+
+                latitude = gps.getLatitude();
+                longitude = gps.getLongitude();
+
+                Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+
+                try {
+                    addresses = geocoder.getFromLocation(latitude, longitude, 1);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            }, 3000);
+                if(!addresses.isEmpty()) {
+                    cityName = addresses.get(0).getAddressLine(0);
+                    stateName = addresses.get(0).getAddressLine(1);
+                    countryName = addresses.get(0).getAddressLine(2);
+                }
+
+                if(!latitude.isNaN() && !longitude.isNaN()){
+                    new Handler().postDelayed(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            Intent i = new Intent(InitialFullscreenActivity.this,MainActivity.class);
+                            i.putExtra("lat",latitude);
+                            i.putExtra("lng",longitude);
+                            startActivity(i);
+                        }
+                    }, 3000);
+                }
+
+
+
+            } else {
+                // Can't get location.
+                // GPS or network is not enabled.
+                // Ask user to enable GPS/network in settings.
+                gps.showSettingsAlert();
+            }
+
 
         }else{
             failureTxt.setVisibility(TextView.VISIBLE);

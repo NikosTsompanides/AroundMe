@@ -1,6 +1,8 @@
 package com.nikostsompanidis.aroundme;
 
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -12,6 +14,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -23,25 +34,13 @@ public class LoginActivity extends AppCompatActivity {
     Button _loginButton;
     TextView _signupLink;
 
-    String cityName;
-    String stateName;
-    String countryName;
-
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
 
-        Bundle extras = getIntent().getExtras();
 
-        if (extras != null) {
-            cityName = extras.getString("cityName");
-            stateName = extras.getString("stateName");
-            countryName = extras.getString("countryName");
-        }else
-            Toast.makeText(this,"Can't Find Any Location",Toast.LENGTH_SHORT);
 
 
 
@@ -64,9 +63,6 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // Start the Signup activity
                 Intent i = new Intent(getApplicationContext(), SignupActivity.class);
-                i.putExtra("cityName",cityName);
-                i.putExtra("stateName",stateName);
-                i.putExtra("countryName",countryName);
                 startActivityForResult(i, REQUEST_SIGNUP);
             }
         });
@@ -92,6 +88,8 @@ public class LoginActivity extends AppCompatActivity {
         String password = _passwordText.getText().toString();
 
         // TODO: Implement your own authentication logic here.
+        BackgroundTask backgroundTask = new BackgroundTask(LoginActivity.this);
+        backgroundTask.execute("login",email,password);
 
         new android.os.Handler().postDelayed(
                 new Runnable() {
@@ -136,14 +134,14 @@ public class LoginActivity extends AppCompatActivity {
         String password = _passwordText.getText().toString();
 
         if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            _emailText.setError("enter a valid email address");
+            _emailText.setError("Please enter a valid email address");
             valid = false;
         } else {
             _emailText.setError(null);
         }
 
         if (password.isEmpty() || password.length() < 4 || password.length() > 10) {
-            _passwordText.setError("between 4 and 10 alphanumeric characters");
+            _passwordText.setError("Between 4 and 10 alphanumeric characters");
             valid = false;
         } else {
             _passwordText.setError(null);
@@ -151,4 +149,54 @@ public class LoginActivity extends AppCompatActivity {
 
         return valid;
     }
+
+
+    private class BackgroundTask extends AsyncTask<String,Void,String> {
+
+        Context ctx;
+        BackgroundTask(Context ctx){
+
+            this.ctx=ctx;
+        }
+        protected String doInBackground(String... params) {
+
+            String reg_url="http://aroundme-application.000webhostapp.com/login.php";
+            String method= params[0];
+            if(method.equals("login")){
+
+
+                String email=params[1];
+                String password=params[2];
+
+                try {
+                    URL url= new URL(reg_url);
+                    HttpURLConnection httpURLConnection= (HttpURLConnection) url.openConnection();
+                    httpURLConnection.setRequestMethod("POST");
+                    httpURLConnection.setDoOutput(true);
+                    OutputStream os= httpURLConnection.getOutputStream();
+
+                    BufferedWriter bufferedWriter= new BufferedWriter(new OutputStreamWriter(os,"UTF-8"));
+
+                    String data= URLEncoder.encode("email", "UTF-8")+"="+URLEncoder.encode(email,"UTF-8")+"&"+
+                            URLEncoder.encode("password","UTF-8")+"="+URLEncoder.encode(password,"UTF-8");
+                    bufferedWriter.write(data);
+                    bufferedWriter.flush();
+                    bufferedWriter.close();
+                    os.close();
+                    InputStream IS= httpURLConnection.getInputStream();
+                    IS.close();
+                    return "Log in success";
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+            return null;
+        }
+
+    }
+
 }

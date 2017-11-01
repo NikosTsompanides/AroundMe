@@ -26,7 +26,7 @@
         android:paddingTop="@dimen/nav_header_vertical_spacing"
         android:text="Around Me !"
         android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-        android:textColor="#f94878"
+        android:textColor="#ffff"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -36,7 +36,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="casual"
         android:text="Find the best places around you !"
-        android:textColor="#f94878"
+        android:textColor="#ffff"
         android:textSize="14sp"
         android:textStyle="bold" />
 

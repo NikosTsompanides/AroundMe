@@ -25,9 +25,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RatingBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -59,18 +64,11 @@ public class MainActivity extends AppCompatActivity
     private double lati,lngi;
     private boolean isOpen;
 
+    private double longitude,latitude;
 
-    List<Address> addresses = new ArrayList<Address>();
-
-    String cityName;
-    String stateName;
-    String countryName;
 
     public MainActivity() {
     }
-
-    double latitude=0 ;
-    double longitude=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,36 +77,12 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        GPSTracker  gps = new GPSTracker(MainActivity.this);
-
-        // Check if GPS enabled
-        if(gps.canGetLocation()) {
-
-            latitude = gps.getLatitude();
-            longitude = gps.getLongitude();
-
-            Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
-
-            try {
-                addresses = geocoder.getFromLocation(latitude, longitude, 1);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if(!addresses.isEmpty()) {
-                cityName = addresses.get(0).getAddressLine(0);
-                stateName = addresses.get(0).getAddressLine(1);
-                countryName = addresses.get(0).getAddressLine(2);
-            }
-
-        } else {
-            // Can't get location.
-            // GPS or network is not enabled.
-            // Ask user to enable GPS/network in settings.
-            gps.showSettingsAlert();
-        }
-
-
-
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            latitude = extras.getDouble("lat");
+            longitude = extras.getDouble("lng");
+        }else
+            Toast.makeText(this,"Can't Find Any Location",Toast.LENGTH_SHORT);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -500,9 +474,6 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_user) {
             Intent i = new Intent(getApplicationContext(),LoginActivity.class);
-            i.putExtra("cityName",cityName);
-            i.putExtra("stateName",stateName);
-            i.putExtra("countryName",countryName);
             startActivity(i);
 
             return true;
@@ -641,7 +612,6 @@ public class MainActivity extends AppCompatActivity
 
             }
         }
-
 
         private ArrayList<Venue> fetchStoresData(String section) {
 

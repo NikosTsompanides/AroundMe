@@ -3,48 +3,55 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0099cc"
+    android:background="@color/colorPrimary"
     tools:context="com.nikostsompanidis.aroundme.InitialFullscreenActivity">
 
     <!-- The primary full-screen view. This can be replaced with whatever view
          is needed to present your content, e.g. VideoView, SurfaceView,
          TextureView, etc. -->
-    <ImageView
-        android:id="@+id/fullscreen_content"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:scaleType="centerCrop"
-        app:srcCompat="@drawable/pexels_photo" />
 
     <!-- This FrameLayout insets its children based on system windows using
          android:fitsSystemWindows. -->
 
-    <TextView
-        android:id="@+id/succesInternetConnectionTextView"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="80sp"
-        android:fontFamily="casual"
-        android:text="Welcome to Around  me !"
-        android:textAlignment="center"
-        android:textColor="#ffffff"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:visibility="invisible" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/failureInternetConnectionTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="80sp"
-        android:fontFamily="casual"
-        android:text="Oups Something Went Wrong With The Internet Connection ! Please Try Again Later  :( !"
-        android:textAlignment="center"
-        android:textColor="#ffff"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:visibility="invisible" />
+        <ProgressBar
+            android:id="@+id/fullscreen_content"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="match_parent"
+            android:layout_height="210dp"
+            android:layout_weight="1.04" />
+
+        <TextView
+            android:id="@+id/succesInternetConnectionTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="casual"
+            android:text="Welcome to Around  me !"
+            android:textAlignment="center"
+            android:textColor="@color/colorAccent"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:visibility="invisible" />
+
+        <TextView
+            android:id="@+id/failureInternetConnectionTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="casual"
+            android:text="Oups Something Went Wrong With The Internet Connection ! Please Try Again Later  :( !"
+            android:textAlignment="center"
+            android:textColor="@color/colorAccent"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:visibility="invisible" />
+
+    </LinearLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -62,8 +69,8 @@
             tools:ignore="UselessParent">
 
 
-
         </LinearLayout>
+
     </FrameLayout>
 
 </FrameLayout>
