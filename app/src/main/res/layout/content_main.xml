@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:background="#ffff"
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.nikostsompanidis.aroundme.MainActivity"
@@ -72,6 +73,7 @@
                     android:textColor="#ffffff"
                     android:textSize="14sp"
                     android:textStyle="bold" />
+
             </RelativeLayout>
 
             <LinearLayout
@@ -97,7 +99,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_weight="0.66"
-                            android:fontFamily="casual"
+                            android:fontFamily="@font/comfortaa"
                             android:paddingBottom="20dp"
                             android:paddingLeft="10dp"
                             android:paddingTop="20dp"
@@ -105,6 +107,7 @@
                             android:textAlignment="viewStart"
                             android:textColor="#f94878"
                             android:textSize="18sp"
+                            android:textStyle="bold"
                             android:typeface="normal" />
 
                     </LinearLayout>
@@ -131,7 +134,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_weight="0.66"
-                            android:fontFamily="casual"
+                            android:fontFamily="@font/comfortaa"
                             android:paddingBottom="20dp"
                             android:paddingLeft="10dp"
                             android:paddingTop="20dp"
@@ -139,6 +142,7 @@
                             android:textAlignment="viewStart"
                             android:textColor="#f94878"
                             android:textSize="18sp"
+                            android:textStyle="bold"
                             android:typeface="normal" />
 
                     </LinearLayout>
@@ -149,7 +153,6 @@
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent" />
                 </LinearLayout>
-
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -166,7 +169,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_weight="0.66"
-                            android:fontFamily="casual"
+                            android:fontFamily="@font/comfortaa"
                             android:paddingBottom="20dp"
                             android:paddingLeft="10dp"
                             android:paddingTop="20dp"
@@ -174,6 +177,7 @@
                             android:textAlignment="viewStart"
                             android:textColor="#f94878"
                             android:textSize="18sp"
+                            android:textStyle="bold"
                             android:typeface="normal" />
 
                     </LinearLayout>
@@ -184,7 +188,6 @@
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent" />
                 </LinearLayout>
-
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -201,7 +204,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_weight="0.66"
-                            android:fontFamily="casual"
+                            android:fontFamily="@font/comfortaa"
                             android:paddingBottom="20dp"
                             android:paddingLeft="10dp"
                             android:paddingTop="20dp"
@@ -209,6 +212,7 @@
                             android:textAlignment="viewStart"
                             android:textColor="#f94878"
                             android:textSize="18sp"
+                            android:textStyle="bold"
                             android:typeface="normal" />
 
                     </LinearLayout>
@@ -219,7 +223,6 @@
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent" />
                 </LinearLayout>
-
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -236,7 +239,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_weight="0.66"
-                            android:fontFamily="casual"
+                            android:fontFamily="@font/comfortaa"
                             android:paddingBottom="20dp"
                             android:paddingLeft="10dp"
                             android:paddingTop="20dp"
@@ -244,6 +247,7 @@
                             android:textAlignment="viewStart"
                             android:textColor="#f94878"
                             android:textSize="18sp"
+                            android:textStyle="bold"
                             android:typeface="normal" />
 
                     </LinearLayout>
@@ -271,7 +275,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_weight="0.66"
-                            android:fontFamily="casual"
+                            android:fontFamily="@font/comfortaa"
                             android:paddingBottom="20dp"
                             android:paddingLeft="10dp"
                             android:paddingTop="20dp"
@@ -279,6 +283,7 @@
                             android:textAlignment="viewStart"
                             android:textColor="#f94878"
                             android:textSize="18sp"
+                            android:textStyle="bold"
                             android:typeface="normal" />
 
                     </LinearLayout>

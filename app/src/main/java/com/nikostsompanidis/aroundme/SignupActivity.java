@@ -12,16 +12,22 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 
 public class SignupActivity extends AppCompatActivity {
@@ -33,6 +39,10 @@ public class SignupActivity extends AppCompatActivity {
 
     Button _signupButton;
     TextView _loginLink;
+    String json_string="";
+
+
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -79,36 +89,57 @@ public class SignupActivity extends AppCompatActivity {
         progressDialog.setMessage("Creating Account...");
         progressDialog.show();
 
-        String name = _nameText.getText().toString();
-        String email = _emailText.getText().toString();
-        String password = _passwordText.getText().toString();
+        final String name = _nameText.getText().toString();
+        final String email = _emailText.getText().toString();
+        final String password = _passwordText.getText().toString();
 
         // TODO: Implement your own signup logic here.
-        SignupActivity.BackgroundTask backgroundTask=new BackgroundTask(SignupActivity.this);
-        backgroundTask.execute("register",name,email,password);
+
 
         new android.os.Handler().postDelayed(
                 new Runnable() {
                     public void run() {
+
+                        SignupActivity.BackgroundTask backgroundTask=new BackgroundTask(SignupActivity.this);
+                        try {
+                            String result =backgroundTask.execute("register",name,email,password).get();
+                            JSONObject json = new JSONObject(result);
+                            String success = json.getString("success");
+                            Log.i("success",success);
+                            if(success.equals("true")) {
+                                onSignupSuccess();
+                            }else
+                                onSignupFailed();
+
+
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+
                         // On complete call either onSignupSuccess or onSignupFailed
                         // depending on success
                         onSignupSuccess();
                         // onSignupFailed();
                         progressDialog.dismiss();
                     }
-                }, 3000);
+                }, 4000);
     }
 
 
     public void onSignupSuccess() {
+        Toast.makeText(getBaseContext(), "Successful Sign Up", Toast.LENGTH_LONG).show();
         _signupButton.setEnabled(true);
         setResult(RESULT_OK, null);
         finish();
     }
 
     public void onSignupFailed() {
-        Toast.makeText(getBaseContext(), "Login failed", Toast.LENGTH_LONG).show();
-
+        Toast.makeText(getBaseContext(), "Sign Up failed , the email is used ", Toast.LENGTH_LONG).show();
         _signupButton.setEnabled(true);
     }
 
@@ -177,10 +208,19 @@ public class SignupActivity extends AppCompatActivity {
                     bufferedWriter.flush();
                     bufferedWriter.close();
                     os.close();
-                    InputStream IS=httpURLConnection.getInputStream();
-                    IS.close();
-                    Log.i("Data",""+data);
-                    return "Registration success";
+                    InputStream inputStream = httpURLConnection.getInputStream();
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                    StringBuilder stringBuilder = new StringBuilder();
+
+                    while ((json_string = bufferedReader.readLine()) != null) {
+                        stringBuilder.append(json_string + "\n");
+                    }
+
+                    bufferedReader.close();
+                    inputStream.close();
+                    httpURLConnection.disconnect();
+                    Log.i("json",stringBuilder.toString().trim());
+                    return stringBuilder.toString().trim();
 
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
@@ -192,10 +232,6 @@ public class SignupActivity extends AppCompatActivity {
             return null;
         }
 
-        @Override
-        protected void onPostExecute(String result) {
-            Toast.makeText(getBaseContext(), ""+result, Toast.LENGTH_LONG).show();
-        }
 
     }
 

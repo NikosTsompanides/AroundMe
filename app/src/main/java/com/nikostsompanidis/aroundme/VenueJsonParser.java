@@ -28,28 +28,29 @@ public class VenueJsonParser {
             Venue ven = null;
 
             for(int i =0; i< items.length(); i++){
-                String name,address,image,phone;
+                String name,address,image,phone,prefix,suffix;
                 int rating,checkInCount,distance;
                 boolean isOpen;
                 double lat,lng;
+                String venueId;
 
 
                 JSONObject currentShop = items.optJSONObject(i);
                 JSONObject venue = currentShop.optJSONObject("venue");
                 name = venue.optString("name");
                 address=venue.optJSONObject("location").optString("address","Oups ! The address is missing :( !");
-                isOpen=true;
-                        //venue.getJSONObject("hours").getBoolean("isOpen");
+                isOpen=venue.getJSONObject("hours").getBoolean("isOpen");
                 rating=venue.optInt("rating");
                 phone=venue.optJSONObject("contact").optString("formattedPhone");
                 lat=venue.optJSONObject("location").optDouble("lat",2.0);
                 lng=venue.optJSONObject("location").optDouble("lng",2);
                 checkInCount=venue.optJSONObject("stats").optInt("checkinsCount");
                 distance=venue.optJSONObject("location").optInt("distance");
-                image="";
-
-
-                ven = new Venue(lat,lng,rating,checkInCount,name,address,isOpen,phone,distance,image);
+                prefix=venue.optJSONObject("photos").optJSONArray("groups").optJSONObject(0).optJSONArray("items").optJSONObject(0).optString("prefix");
+                suffix=venue.optJSONObject("photos").optJSONArray("groups").optJSONObject(0).optJSONArray("items").optJSONObject(0).optString("suffix");
+                image=prefix+"original"+suffix;
+                venueId=venue.optString("id");
+                ven = new Venue(venueId,lat,lng,rating,checkInCount,name,address,isOpen,phone,distance,image);
                 results.add(ven);
             }
 
@@ -58,6 +59,36 @@ public class VenueJsonParser {
         }
 
         return results;
+    }
+
+    public static ArrayList<String> getPhotosFromJson(String jsonString){
+
+
+        ArrayList<String> photos = new ArrayList<>();
+
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            JSONObject response = jsonObject.getJSONObject("response");
+            JSONObject photosObj = response.getJSONObject("photos");
+            JSONArray items = photosObj.getJSONArray("items");
+
+            for(int i =0; i< items.length(); i++){
+                String prefix,suffix,image;
+
+
+                JSONObject currentPhoto = items.optJSONObject(i);
+                prefix=currentPhoto.optString("prefix");
+                suffix=currentPhoto.optString("suffix");
+                image=prefix+"original"+suffix;
+                photos.add(image);
+            }
+
+        } catch (JSONException e) {
+            Log.e("VenueJsonParser", e.getMessage());
+        }
+
+        return photos;
+
     }
 
 }

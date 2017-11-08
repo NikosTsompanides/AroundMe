@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 public class Venue {
 
-    private long venueId;
+    private String venueId;
     private int rating,chekInsCount;
     private ArrayList<Double> hours;
     private String Name,Description,url,address,image,phone;
@@ -20,7 +20,7 @@ public class Venue {
     private double lat,lng;
 
 
-    public Venue(long venueId, double lat, double lng, int rating, int chekInsCount, ArrayList<Double> hours, String name, String description, String url, String address, String image, int priceTier, String priceMessage, String priceCurrency, ArrayList<String> categories, ArrayList<String> photos, ArrayList<Integer> stats, boolean isOpen) {
+    public Venue(String venueId, double lat, double lng, int rating, int chekInsCount, ArrayList<Double> hours, String name, String description, String url, String address, String image, int priceTier, String priceMessage, String priceCurrency, ArrayList<String> categories, ArrayList<String> photos, ArrayList<Integer> stats, boolean isOpen) {
         this.venueId = venueId;
         this.lat = lat;
         this.lng = lng;
@@ -53,7 +53,7 @@ public class Venue {
         this.isOpen = isOpen;
     }
 
-    public Venue(double lat, double lng, int rating, int chekInsCount, String name, String address,boolean isOpen,String phone,int distance,String image) {
+    public Venue(String venueId,double lat, double lng, int rating, int chekInsCount, String name, String address,boolean isOpen,String phone,int distance,String image) {
         this.lat = lat;
         this.lng = lng;
         this.rating = rating;
@@ -64,7 +64,9 @@ public class Venue {
         this.distance=distance;
         this.phone=phone;
         this.image=image;
+        this.venueId=venueId;
     }
+
 
     public int getDistance() {
         return distance;
@@ -74,11 +76,11 @@ public class Venue {
         this.distance = distance;
     }
 
-    public long getVenueId() {
+    public String getVenueId() {
         return venueId;
     }
 
-    public void setVenueId(long venueId) {
+    public void setVenueId(String venueId) {
         this.venueId = venueId;
     }
 
