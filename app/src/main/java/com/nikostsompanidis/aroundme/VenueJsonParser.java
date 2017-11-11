@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,6 +89,56 @@ public class VenueJsonParser {
         }
 
         return photos;
+
+    }
+
+    public static ArrayList<Tip> geTipsFromJson(String jsonString){
+
+
+        ArrayList<Tip> Tips = new ArrayList<>();
+
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            JSONObject response = jsonObject.getJSONObject("response");
+            JSONObject tips = response.getJSONObject("tips");
+            JSONArray items = tips.getJSONArray("items");
+
+            for(int i =0; i< items.length(); i++){
+                String text,tipImage,userPrefix,userSuffix,userImage,name,surname;
+                int upvotes,downvotes;
+                long timestamp;
+                Timestamp createdAt;
+
+
+
+                JSONObject currentTip = items.optJSONObject(i);
+
+                tipImage=currentTip.optString("photourl","");
+                upvotes=currentTip.optInt("agreeCount");
+                downvotes=currentTip.optInt("disagreeCount");
+                timestamp=currentTip.optLong("createdAt");
+                createdAt=new Timestamp(timestamp);
+                text=currentTip.optString("text");
+
+                JSONObject user = currentTip.optJSONObject("user");
+                name = user.optString("firstName","test");
+                surname = user.optString("lastName");
+
+                JSONObject photo = user.optJSONObject("photo");
+                userPrefix=photo.optString("prefix");
+                userSuffix = photo.optString("suffix");
+                userImage=userPrefix+"original"+userSuffix;
+                FoursquareUser User = new FoursquareUser(name,surname,userImage);
+                Log.i("test2",""+name+" "+surname+" "+upvotes+" "+downvotes);
+                Tip tip = new Tip(text,tipImage,upvotes,downvotes,createdAt,User);
+                Tips.add(tip);
+            }
+
+        } catch (JSONException e) {
+            Log.e("VenueJsonParser", e.getMessage());
+        }
+
+        return Tips;
 
     }
 

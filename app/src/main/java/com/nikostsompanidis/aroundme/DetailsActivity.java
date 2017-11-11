@@ -1,8 +1,5 @@
 package com.nikostsompanidis.aroundme;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
@@ -16,20 +13,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.RatingBar;
-import android.widget.TextView;
+
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
+
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -55,6 +47,7 @@ public class DetailsActivity extends AppCompatActivity  {
     private ProgressBar progressBar4;
 
     private ArrayList<String> Photos=new ArrayList<>();
+    private ArrayList<Tip> Tips=new ArrayList<>();
 
     Toolbar toolbar;
     @Override
@@ -102,11 +95,24 @@ public class DetailsActivity extends AppCompatActivity  {
             e.printStackTrace();
         }
 
+        FetchTipsOfVenueTask tipsTask = new FetchTipsOfVenueTask();
+        try {
+            Tips = tipsTask.execute(venueId).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 
+        if(Tips.isEmpty())
+            Log.i("empty","EMPTY");
+        else
+            Log.i("full","FULL");
+        for(Tip t :Tips)
+            Log.i("tipText",t.getText());
 
         photosBundle.putStringArrayList("photos",Photos);
-
-
+        tipsBundle.putParcelableArrayList("tips",Tips);
 
 
         setSupportActionBar(toolbar);
@@ -218,7 +224,7 @@ public class DetailsActivity extends AppCompatActivity  {
                 jsonStr = buffer.toString();
 
                 photosofVenue = VenueJsonParser.getPhotosFromJson(jsonStr);
-
+                Log.i("test1",jsonStr);
                 return photosofVenue;
 
 
@@ -240,6 +246,90 @@ public class DetailsActivity extends AppCompatActivity  {
             }
 
             return photosofVenue;
+        }
+    }
+
+
+    public class FetchTipsOfVenueTask extends AsyncTask<String, Void, ArrayList<Tip>> {
+
+        private ArrayList<Tip> tipsofVenue = new ArrayList<>();
+
+
+        @Override
+        protected ArrayList<Tip> doInBackground(String... params) {
+
+            return fetchStoresData(venueId);
+        }
+
+        protected void onPostExecute(ArrayList<Tip> tips) {
+            if (tips != null) {
+                tipsofVenue.addAll(tips);
+            }
+        }
+
+        private ArrayList<Tip> fetchStoresData(String venueId) {
+
+
+            // These two need to be declared outside the try/catch
+            // so that they can be closed in the finally block.
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
+
+            // Will contain the raw JSON response as a string.
+            String jsonStr = null;
+
+            try {
+
+                URL url = new URL("https://api.foursquare.com/v2/venues/"+venueId+"/tips?v=20161016&limit=30&sort=popular&client_id=VG2QOOJOVR1ALCMP5DBG2QDT3G31U3WJELPPZWUAZP21SFZC&client_secret=SIHMHQV5YEKERQWDP3G5UKWY22RDZ1DOQCKW2STQKYAGDLNA");
+
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+
+                InputStream inputStream = urlConnection.getInputStream();
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                    // Nothing to do.
+                }
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+
+                    buffer.append(line + "\n");
+                }
+
+                if (buffer.length() == 0) {
+                    // Stream was empty.  No point in parsing.
+                }
+                jsonStr = buffer.toString();
+
+                tipsofVenue = VenueJsonParser.geTipsFromJson(jsonStr);
+                Log.i("test",jsonStr);
+
+                for(Tip t : tipsofVenue)
+                    Log.i("detailsOfTip",t.getText());
+                return tipsofVenue;
+
+
+            } catch (IOException e) {
+                Log.e("PlaceholderFragment", "Error ", e);
+                // If the code didn't successfully get the weather data, there's no point in attemping
+                // to parse it.
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (final IOException e) {
+                        Log.e("PlaceholderFragment", "Error closing stream", e);
+                    }
+                }
+            }
+
+            return tipsofVenue;
         }
     }
 
