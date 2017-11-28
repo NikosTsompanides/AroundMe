@@ -9,15 +9,14 @@ import java.util.ArrayList;
 public class User {
 
     private String name,email,password ;
-    private int user_id,favoritePlaces;
+    private String user_id;
+    private ArrayList<Venue> favoritePlaces = new ArrayList<>();
 
 
-    public User(String name, String email, String password, int user_id,int favoritePlaces) {
+    public User(String name, String email, String user_id) {
         this.name = name;
         this.email = email;
-        this.password = password;
         this.user_id = user_id;
-        this.favoritePlaces = favoritePlaces;
     }
 
     public String getName() {
@@ -44,19 +43,19 @@ public class User {
         this.password = password;
     }
 
-    public int getUser_id() {
+    public String getUser_id() {
         return user_id;
     }
 
-    public void setUser_id(int user_id) {
+    public void setUser_id(String user_id) {
         this.user_id = user_id;
     }
 
-    public int getFavoritePlaces() {
+    public ArrayList<Venue> getFavoritePlaces() {
         return favoritePlaces;
     }
 
-    public void setFavoritePlaces(int favoritePlaces) {
+    public void setFavoritePlaces(ArrayList<Venue> favoritePlaces) {
         this.favoritePlaces = favoritePlaces;
     }
 }

@@ -1,18 +1,28 @@
 package com.nikostsompanidis.aroundme;
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 
 import com.bumptech.glide.Glide;
@@ -20,7 +30,10 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-import com.google.android.gms.maps.GoogleMap;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 
 import java.io.BufferedReader;
@@ -40,22 +53,24 @@ public class DetailsActivity extends AppCompatActivity  {
     private double lat,lng;
     private boolean isOpen;
     private String venueId;
-    private GoogleMap mMap;
 
     private ImageView Image ;
-    private TabLayout tabLayout;
-    private ProgressBar progressBar4;
+
 
     private ArrayList<String> Photos=new ArrayList<>();
     private ArrayList<Tip> Tips=new ArrayList<>();
+    private FirebaseDatabase mFireBaseDatabase;
+    private DatabaseReference mDatabaseReference;
+
+    private FirebaseAuth mFireBaseAuth;
+    private FirebaseAuth.AuthStateListener mAuthStateListener;
+    private FirebaseUser user;
 
     Toolbar toolbar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
-
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         Bundle extras = getIntent().getExtras();
 
@@ -72,6 +87,64 @@ public class DetailsActivity extends AppCompatActivity  {
             image=extras.getString("image");
             venueId=extras.getString("id");
         }
+
+        mFireBaseDatabase=FirebaseDatabase.getInstance("https://aroundme-11c29.firebaseio.com/");
+        mDatabaseReference=mFireBaseDatabase.getReference().child("users");
+        mFireBaseAuth = FirebaseAuth.getInstance();
+        mAuthStateListener=new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                user = firebaseAuth.getCurrentUser();
+            }
+        };
+
+        FirebaseAuth.getInstance().addAuthStateListener(mAuthStateListener);
+
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab2);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(user!=null){
+                    mDatabaseReference.child(user.getUid()).child("favoritePlaces").push().setValue(new Venue(venueId,lat,lng,rating,chekInsCount,name,address,isOpen,phone,distance,image));
+                    Toast.makeText(DetailsActivity.this,"Just added to your favorite places! You can see your favorite places on user dashboard !!",Toast.LENGTH_LONG).show();
+                }else{
+
+                    AlertDialog.Builder builder;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        builder = new AlertDialog.Builder(DetailsActivity.this, android.R.style.Theme_Material_Light_Dialog_Alert);
+                    } else {
+                        builder = new AlertDialog.Builder(DetailsActivity.this);
+                    }
+                    builder.setTitle("Log In or Sign Up")
+                            .setMessage("You have to log in or sign up to add a place in your favorite places. Do you want to do itn now?")
+                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    Intent i = new Intent(getApplicationContext(), LoginActivity.class);
+                                    i.putExtra("lng",lat);
+                                    i.putExtra("lat",lng);
+                                    startActivity(i);
+
+                                }
+                            })
+                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            })
+                            .show();
+                }
+
+
+            }
+        });
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        navigation.getMenu().getItem(0).setChecked(false);
+
 
         Bundle highlightsBundle = new Bundle();
         Bundle tipsBundle = new Bundle();
@@ -118,6 +191,7 @@ public class DetailsActivity extends AppCompatActivity  {
         setSupportActionBar(toolbar);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle(name);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
@@ -145,29 +219,66 @@ public class DetailsActivity extends AppCompatActivity  {
             }
         });
 
+
         Image = (ImageView)findViewById(R.id.ivParallax) ;
-        progressBar4=(ProgressBar) findViewById(R.id.progressBar4);
         Glide.with(DetailsActivity.this)
                 .load(image)
-                .listener(new RequestListener<Drawable>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                        progressBar4.setVisibility(View.GONE);
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                        progressBar4.setVisibility(View.GONE);
-                        return false;
-                    }
-                })
                 .into(Image);
         toolbar.setTitle(name);
 
 
+
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return false;
+    }
+
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
+            = new BottomNavigationView.OnNavigationItemSelectedListener() {
+
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.navigation_search:
+                    Intent i = new Intent(getApplicationContext(),MainActivity.class);
+                    i.putExtra("lat",lat);
+                    i.putExtra("lng",lng);
+                    startActivity(i);
+                    return true;
+                case R.id.navigation_map:
+                    Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+                    intent.putExtra("lat", lat);
+                    intent.putExtra("lng", lng);
+                    startActivity(intent);
+                    return true;
+                case R.id.navigation_dashboard:
+                    if(user !=null){
+                        Intent in = new Intent(DetailsActivity.this,UserDashboardActivity.class);
+                        in.putExtra("lat", lat);
+                        in.putExtra("lng", lng);
+                        in.putExtra("name",user.getDisplayName());
+                        in.putExtra("img", String.valueOf(user.getPhotoUrl()));
+                        startActivity(in);
+                        return true;
+                    }else{
+                        //Toast.makeText(MainActivity.this,"You must log in to access the user dashboard",Toast.LENGTH_LONG).show();
+                        Intent nt = new Intent(getApplicationContext(), LoginActivity.class);
+                        nt.putExtra("lng",lat);
+                        nt.putExtra("lat",lng);
+                        startActivity(nt);
+                        return true;
+                    }
+            }
+            return false;
+        }
+
+    };
 
     public class FetchPhotosOfVenueTask extends AsyncTask<String, Void, ArrayList<String>> {
 

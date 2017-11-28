@@ -19,6 +19,18 @@ public class Venue {
     private int distance;
     private double lat,lng;
 
+    public Venue(){
+
+    }
+
+    public Venue(String venueId, String name, boolean isOpen, int distance, double lat, double lng) {
+        this.venueId = venueId;
+        Name = name;
+        this.isOpen = isOpen;
+        this.distance = distance;
+        this.lat = lat;
+        this.lng = lng;
+    }
 
     public Venue(String venueId, double lat, double lng, int rating, int chekInsCount, ArrayList<Double> hours, String name, String description, String url, String address, String image, int priceTier, String priceMessage, String priceCurrency, ArrayList<String> categories, ArrayList<String> photos, ArrayList<Integer> stats, boolean isOpen) {
         this.venueId = venueId;

@@ -130,8 +130,9 @@ public class TipsFragment extends Fragment {
             Tip tip = list.get(position);
             String name = tip.getUser().getName() + " " + tip.getUser().getSurname();
             holder.name.setText(name);
-            Date date = new Date(tip.getCreatedAt().getNanos());
-            DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
+
+            Date date = new Date(tip.getCreatedAt().getTime()*1000);
+            DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
             String createdat = df.format(date);
             holder.createdAt.setText(createdat);
             holder.upvotes.setText("" + tip.getUpvotes());

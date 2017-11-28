@@ -3,16 +3,19 @@ package com.nikostsompanidis.aroundme;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
@@ -54,6 +57,8 @@ public class InitialFullscreenActivity extends AppCompatActivity {
         }
         getLocation();
 
+        Log.i("lat",latitude.toString());
+        Log.i("lng",longitude.toString());
 
     }
 
@@ -74,6 +79,7 @@ public class InitialFullscreenActivity extends AppCompatActivity {
 
             latitude = gps.getLatitude();
             longitude = gps.getLongitude();
+
 
             Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
 

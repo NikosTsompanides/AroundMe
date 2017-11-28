@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
+    compileSdkVersion 26
     buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "com.nikostsompanidis.aroundme"
         minSdkVersion 17
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -21,6 +21,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+
 }
 
 dependencies {
@@ -32,20 +34,34 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
     //noinspection GradleCompatible
-    compile 'com.android.support:appcompat-v7:25.1.0'
-    compile 'com.android.support:design:25.1.0'
+    compile 'com.android.support:appcompat-v7:26.1.0'
+    compile 'com.android.support:design:26.1.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'com.google.android.gms:play-services-maps:10.0.1'
+    compile 'com.google.android.gms:play-services-maps:11.4.2'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.daimajia.easing:library:1.0.0@aar'
     compile 'com.daimajia.androidanimations:library:1.1.2@aar'
-    compile 'com.android.support:cardview-v7:25.1.0'
-    compile 'com.android.support:palette-v7:25.1.0'
+    compile 'com.android.support:cardview-v7:26.1.0'
+    compile 'com.android.support:palette-v7:26.1.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.github.chrisbanes:PhotoView:2.0.0'
     compile 'com.github.bumptech.glide:glide:4.3.0'
     compile 'de.hdodenhof:circleimageview:2.2.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.3.0'
     compile 'io.saeid:fab-loading:1.0.0'
+    compile 'com.android.support:support-v13:26.1.0'
+    compile 'com.google.firebase:firebase-core:11.4.2'
+    compile 'com.google.firebase:firebase-auth:11.4.2'
+    compile 'com.google.firebase:firebase-database:11.4.2'
+    compile 'com.google.firebase:firebase-storage:11.4.2'
+    compile 'com.firebaseui:firebase-ui-database:3.1.0'
+    compile 'com.firebaseui:firebase-ui-auth:3.1.0'
+    compile 'com.google.android.gms:play-services-auth:11.4.2'
+    compile 'com.facebook.android:facebook-android-sdk:[4,5)'
+    compile 'com.makeramen:roundedimageview:2.3.0'
+
+
     testCompile 'junit:junit:4.12'
 }
+
+apply plugin: 'com.google.gms.google-services'

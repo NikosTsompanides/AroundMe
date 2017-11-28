@@ -38,5 +38,9 @@
     </style>
 
 
+    <style name="userDashboardText" parent="@style/Base.TextAppearance.AppCompat.Title">
+        <item name="android:textSize">12sp</item>
+    </style>
+
 
 </resources>

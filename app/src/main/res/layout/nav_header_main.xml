@@ -13,16 +13,17 @@
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/usrImageView"
         android:layout_width="69dp"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
+        android:scaleType="fitCenter"
         app:srcCompat="@drawable/ic_account_circle_white_48dp" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fontFamily="casual"
+        android:fontFamily="@font/comfortaa"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
         android:text="Around Me !"
         android:textAppearance="@style/TextAppearance.AppCompat.Body2"
@@ -34,7 +35,7 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="casual"
+        android:fontFamily="@font/comfortaa"
         android:text="Find the best places around you !"
         android:textColor="#ffff"
         android:textSize="14sp"

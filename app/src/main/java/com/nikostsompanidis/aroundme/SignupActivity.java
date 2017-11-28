@@ -104,13 +104,12 @@ public class SignupActivity extends AppCompatActivity {
                         try {
                             String result =backgroundTask.execute("register",name,email,password).get();
                             JSONObject json = new JSONObject(result);
-                            String success = json.getString("success");
-                            Log.i("success",success);
-                            if(success.equals("true")) {
+                            String error = json.getString("error");
+                            Log.i("success",error);
+                            if(error.equals("false")) {
                                 onSignupSuccess();
                             }else
                                 onSignupFailed();
-
 
                         } catch (InterruptedException e) {
                             e.printStackTrace();

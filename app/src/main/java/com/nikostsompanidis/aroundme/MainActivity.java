@@ -1,6 +1,7 @@
 package com.nikostsompanidis.aroundme;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,11 +11,14 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -31,6 +35,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Adapter;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -45,6 +51,10 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -77,8 +87,16 @@ public class MainActivity extends AppCompatActivity
 
     private double longitude, latitude;
     private ProgressBar progressBar2;
+    private FirebaseDatabase mFireBaseDatabase;
+    private DatabaseReference mDatabaseReference;
 
-
+    private FirebaseAuth mFireBaseAuth;
+    private FirebaseAuth.AuthStateListener mAuthStateListener;
+    private FirebaseUser user;
+    private TextView topPicksTextView,foodTextView,coffeeTextView,barsTextView,artsTextView,outdoorsTextView;
+    private ImageView usrImageView;
+    private Button button;
+    private CardView search;
     public MainActivity() {
     }
 
@@ -89,12 +107,41 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        topPicksTextView=findViewById(R.id.topPicksTextView);
+        foodTextView=findViewById(R.id.BreakfastTextView);
+        coffeeTextView=findViewById(R.id.dinnerTextView);
+        barsTextView=findViewById(R.id.barsTextView);
+        artsTextView=findViewById(R.id.artsTextView);
+        outdoorsTextView=findViewById(R.id.outdoorsTextView);
+        usrImageView=findViewById(R.id.usrImageView);
+        search=findViewById(R.id.searchCardView);
+        button= findViewById(R.id.searchButton);
+
+
+        mFireBaseDatabase=FirebaseDatabase.getInstance("https://aroundme-11c29.firebaseio.com/");
+        mDatabaseReference=mFireBaseDatabase.getReference().child("users");
+        mFireBaseAuth = FirebaseAuth.getInstance();
+        mAuthStateListener=new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                user = firebaseAuth.getCurrentUser();
+            }
+        };
+        mFireBaseAuth.addAuthStateListener(mAuthStateListener);
+
+
+        if(user!=null)
+            Glide.with(this)
+                .load(user.getPhotoUrl())
+                .into(usrImageView);
+
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             latitude = extras.getDouble("lat");
             longitude = extras.getDouble("lng");
         } else
-            Toast.makeText(this, "Can't Find Any Location", Toast.LENGTH_SHORT);
+            Toast.makeText(this, "Can't Find Any Location", Toast.LENGTH_SHORT).show();
+
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -116,6 +163,17 @@ public class MainActivity extends AppCompatActivity
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, 11);
         }
 
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(MainActivity.this,SearchActivity.class);
+                i.putExtra("lng",longitude);
+                i.putExtra("lat",latitude);
+                startActivity(i);
+            }
+        });
+
         foodShops = getVenues("food");
         coffeeShops = getVenues("coffee");
         bars = getVenues("drinks");
@@ -123,104 +181,131 @@ public class MainActivity extends AppCompatActivity
         topPicks = getVenues("topPicks");
         outdoors = getVenues("outdoors");
 
-        horizontal_top_picks_recycler_view = (RecyclerView) findViewById(R.id.horizontal_top_picks_recycler_view);
-        horizontal_top_picks_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_top_picks_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                goToVenueDetailsActivity(position, topPicks);
-            }
+        if(!topPicks.isEmpty()){
+            topPicksTextView.setVisibility(View.VISIBLE);
+            horizontal_top_picks_recycler_view = (RecyclerView) findViewById(R.id.horizontal_top_picks_recycler_view);
+            horizontal_top_picks_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_top_picks_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
+                @Override
+                public void onItemClick(View view, int position) {
+                    goToVenueDetailsActivity(position, topPicks);
+                }
 
-            @Override
-            public void onLongItemClick(View view, int position) {
-                // do whatever
-            }
-        }));
+                @Override
+                public void onLongItemClick(View view, int position) {
+                    // do whatever
+                }
+            }));
+            topPicksAdapter = new HorizontalAdapter(topPicks);
+            layoutManager(horizontal_top_picks_recycler_view, topPicksAdapter);
 
+        }
 
-        horizontal_food_recycler_view = (RecyclerView) findViewById(R.id.horizontal_food_recycler_view);
-        horizontal_food_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_food_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                goToVenueDetailsActivity(position, foodShops);
-            }
+        if(!foodShops.isEmpty()){
+            foodTextView.setVisibility(View.VISIBLE);
+            horizontal_food_recycler_view = (RecyclerView) findViewById(R.id.horizontal_food_recycler_view);
+            horizontal_food_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_food_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
+                @Override
+                public void onItemClick(View view, int position) {
+                    goToVenueDetailsActivity(position, foodShops);
+                }
 
-            @Override
-            public void onLongItemClick(View view, int position) {
-                // do whatever
-            }
-        }));
+                @Override
+                public void onLongItemClick(View view, int position) {
+                    // do whatever
+                }
+            }));
 
-        horizontal_coffee_recycler_view = (RecyclerView) findViewById(R.id.horizontal_coffee_recycler_view);
-        horizontal_coffee_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_coffee_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                goToVenueDetailsActivity(position, coffeeShops);
-            }
+            foodAdapter = new HorizontalAdapter(foodShops);
+            layoutManager(horizontal_food_recycler_view, foodAdapter);
 
-            @Override
-            public void onLongItemClick(View view, int position) {
-                // do whatever
-            }
-        }));
-
-
-        horizontal_drinks_recycler_view = (RecyclerView) findViewById(R.id.horizontal_drinks_recycler_view);
-        horizontal_drinks_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_drinks_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-
-                goToVenueDetailsActivity(position, bars);
-            }
-
-            @Override
-            public void onLongItemClick(View view, int position) {
-                // do whatever
-            }
-        }));
-
-        horizontal_arts_recycler_view = (RecyclerView) findViewById(R.id.horizontal_arts_recycler_view);
-        horizontal_arts_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_arts_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-
-                goToVenueDetailsActivity(position, arts);
-
-            }
-
-            @Override
-            public void onLongItemClick(View view, int position) {
-                // do whatever
-            }
-        }));
+        }
 
 
-        horizontal_outdoors_recycler_view = (RecyclerView) findViewById(R.id.horizontal_outdoors_recycler_view);
-        horizontal_outdoors_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_outdoors_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                goToVenueDetailsActivity(position, outdoors);
-            }
+        if(!coffeeShops.isEmpty()){
+            coffeeTextView.setVisibility(View.VISIBLE);
+            horizontal_coffee_recycler_view = (RecyclerView) findViewById(R.id.horizontal_coffee_recycler_view);
+            horizontal_coffee_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_coffee_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
+                @Override
+                public void onItemClick(View view, int position) {
+                    goToVenueDetailsActivity(position, coffeeShops);
+                }
 
-            @Override
-            public void onLongItemClick(View view, int position) {
-                // do whatever
-            }
-        }));
+                @Override
+                public void onLongItemClick(View view, int position) {
+                    // do whatever
+                }
+            }));
+            coffeeAdapter = new HorizontalAdapter(coffeeShops);
+            layoutManager(horizontal_coffee_recycler_view, coffeeAdapter);
+
+        }
 
 
-        foodAdapter = new HorizontalAdapter(foodShops);
-        coffeeAdapter = new HorizontalAdapter(coffeeShops);
-        drinksAdapter = new HorizontalAdapter(bars);
-        artsAdapetr = new HorizontalAdapter(arts);
-        topPicksAdapter = new HorizontalAdapter(topPicks);
-        outdoorsAdapter = new HorizontalAdapter(outdoors);
+        if(!bars.isEmpty()){
+            barsTextView.setVisibility(View.VISIBLE);
+            horizontal_drinks_recycler_view = (RecyclerView) findViewById(R.id.horizontal_drinks_recycler_view);
+            horizontal_drinks_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_drinks_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
+                @Override
+                public void onItemClick(View view, int position) {
 
-        layoutManager(horizontal_top_picks_recycler_view, topPicksAdapter);
-        layoutManager(horizontal_food_recycler_view, foodAdapter);
-        layoutManager(horizontal_coffee_recycler_view, coffeeAdapter);
-        layoutManager(horizontal_drinks_recycler_view, drinksAdapter);
-        layoutManager(horizontal_arts_recycler_view, artsAdapetr);
-        layoutManager(horizontal_outdoors_recycler_view, outdoorsAdapter);
+                    goToVenueDetailsActivity(position, bars);
+                }
+
+                @Override
+                public void onLongItemClick(View view, int position) {
+                    // do whatever
+                }
+            }));
+            drinksAdapter = new HorizontalAdapter(bars);
+            layoutManager(horizontal_drinks_recycler_view, drinksAdapter);
+
+        }
+
+
+        if(!arts.isEmpty()){
+            artsTextView.setVisibility(View.VISIBLE);
+            horizontal_arts_recycler_view = (RecyclerView) findViewById(R.id.horizontal_arts_recycler_view);
+            horizontal_arts_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_arts_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
+                @Override
+                public void onItemClick(View view, int position) {
+
+                    goToVenueDetailsActivity(position, arts);
+
+                }
+
+                @Override
+                public void onLongItemClick(View view, int position) {
+                    // do whatever
+                }
+            }));
+            artsAdapetr = new HorizontalAdapter(arts);
+            layoutManager(horizontal_arts_recycler_view, artsAdapetr);
+
+        }
+
+
+        if(!outdoors.isEmpty()){
+            outdoorsTextView.setVisibility(View.VISIBLE);
+            horizontal_outdoors_recycler_view = (RecyclerView) findViewById(R.id.horizontal_outdoors_recycler_view);
+            horizontal_outdoors_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_outdoors_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
+                @Override
+                public void onItemClick(View view, int position) {
+                    goToVenueDetailsActivity(position, outdoors);
+                }
+
+                @Override
+                public void onLongItemClick(View view, int position) {
+                    // do whatever
+                }
+            }));
+            outdoorsAdapter = new HorizontalAdapter(outdoors);
+            layoutManager(horizontal_outdoors_recycler_view, outdoorsAdapter);
+
+        }
+
+
+
+
 
     }
 
@@ -262,11 +347,29 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_user) {
             Intent i = new Intent(getApplicationContext(), LoginActivity.class);
+            i.putExtra("lng",longitude);
+            i.putExtra("lat",latitude);
             startActivity(i);
 
             return true;
         } else if (id == R.id.nav_dashboard) {
 
+            if(user !=null){
+                Intent in = new Intent(MainActivity.this,UserDashboardActivity.class);
+                in.putExtra("lat", latitude);
+                in.putExtra("lng", longitude);
+                in.putExtra("name",user.getDisplayName());
+                in.putExtra("img", String.valueOf(user.getPhotoUrl()));
+                startActivity(in);
+                return true;
+            }else{
+                //Toast.makeText(MainActivity.this,"You must log in to access the user dashboard",Toast.LENGTH_LONG).show();
+                Intent nt = new Intent(getApplicationContext(), LoginActivity.class);
+                nt.putExtra("lng",longitude);
+                nt.putExtra("lat",latitude);
+                startActivity(nt);
+                return true;
+            }
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_rate) {
@@ -293,8 +396,23 @@ public class MainActivity extends AppCompatActivity
                     startActivity(i);
                     return true;
                 case R.id.navigation_dashboard:
-                    Log.w("Message", "Dashboard");
-                    return true;
+                   if(user !=null){
+                       Intent in = new Intent(MainActivity.this,UserDashboardActivity.class);
+                       in.putExtra("lat", latitude);
+                       in.putExtra("lng", longitude);
+                       in.putExtra("name",user.getDisplayName());
+                       in.putExtra("img", String.valueOf(user.getPhotoUrl()));
+                       startActivity(in);
+                       return true;
+                   }else{
+                       //Toast.makeText(MainActivity.this,"You must log in to access the user dashboard",Toast.LENGTH_LONG).show();
+                       Intent nt = new Intent(getApplicationContext(), LoginActivity.class);
+                       nt.putExtra("lng",longitude);
+                       nt.putExtra("lat",latitude);
+                       startActivity(nt);
+                       return true;
+                   }
+
             }
             return false;
         }
@@ -428,7 +546,7 @@ public class MainActivity extends AppCompatActivity
 
             try {
 
-                URL url = new URL("https://api.foursquare.com/v2/venues/explore?v=20161016&ll=" + latitude + "," + longitude + "&section=" + section + "&radius=3000&limit=10&venuePhotos=1&client_id=VG2QOOJOVR1ALCMP5DBG2QDT3G31U3WJELPPZWUAZP21SFZC&client_secret=SIHMHQV5YEKERQWDP3G5UKWY22RDZ1DOQCKW2STQKYAGDLNA");
+                URL url = new URL("https://api.foursquare.com/v2/venues/explore?v=20171123&ll=" + latitude + "," + longitude + "&section=" + section + "&radius=2000&limit=10&venuePhotos=1&client_id=VG2QOOJOVR1ALCMP5DBG2QDT3G31U3WJELPPZWUAZP21SFZC&client_secret=SIHMHQV5YEKERQWDP3G5UKWY22RDZ1DOQCKW2STQKYAGDLNA");
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");

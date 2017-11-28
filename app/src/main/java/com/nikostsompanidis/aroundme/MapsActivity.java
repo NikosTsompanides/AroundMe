@@ -3,8 +3,10 @@ package com.nikostsompanidis.aroundme;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -14,8 +16,13 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.RatingBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -24,6 +31,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,6 +54,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     double latitude=0 ;
     double longitude=0;
+    private FirebaseDatabase mFireBaseDatabase;
+    private DatabaseReference mDatabaseReference;
+
+    private FirebaseAuth mFireBaseAuth;
+    private FirebaseAuth.AuthStateListener mAuthStateListener;
+    private FirebaseUser user;
+
+    private RatingBar ratingBar;
+    private TextView name, Address, Phone, Distance;
+    private ImageView imgView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +74,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        mFireBaseDatabase=FirebaseDatabase.getInstance("https://aroundme-11c29.firebaseio.com/");
+        mDatabaseReference=mFireBaseDatabase.getReference().child("users");
+        mFireBaseAuth = FirebaseAuth.getInstance();
+        mAuthStateListener=new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                user = firebaseAuth.getCurrentUser();
+            }
+        };
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
@@ -101,44 +132,51 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         for(final Venue vn : places){
-            mMap.addMarker(new MarkerOptions().position(new LatLng(vn.getLat(),vn.getLng())).title(""+vn.getName()).snippet(""+vn.getAddress())).setDraggable(true);
-            mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+            mMap.addMarker(new MarkerOptions().position(new LatLng(vn.getLat(),vn.getLng()))).setTag(vn);
 
+            mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                // Use default InfoWindow frame
                 @Override
-                public void onMarkerDragStart(Marker marker) {
-                    // TODO Auto-generated method stub
-
-                    Intent i = new Intent(getBaseContext(),DetailsActivity.class);
-                    i.putExtra("name",vn.getName());
-                    i.putExtra("checkInCount",vn.getChekInsCount());
-                    i.putExtra("isOpen",vn.isOpen());
-                    i.putExtra("rating",vn.getRating());
-                    i.putExtra("address",vn.getAddress());
-                    i.putExtra("phone",vn.getPhone());
-                    i.putExtra("lat",vn.getLat());
-                    i.putExtra("lng",vn.getLng());
-                    i.putExtra("distance",vn.getDistance());
-                    i.putExtra("image",vn.getImage());
-                    startActivity(i);
-
+                public View getInfoWindow(Marker arg0) {
+                    return null;
                 }
 
+                // Defines the contents of the InfoWindow
                 @Override
-                public void onMarkerDragEnd(Marker marker) {
-                    // TODO Auto-generated method stub
+                public View getInfoContents(Marker arg0) {
+                    Venue currentVenue = (Venue) arg0.getTag();
 
-                }
+                    // Getting view from the layout file info_window_layout
+                    View view = getLayoutInflater().inflate(R.layout.info_window, null);
+                    ratingBar=view.findViewById(R.id.ratingBar2);
+                    Address = (TextView)  view.findViewById(R.id.addressTextView);
+                    Phone = (TextView)  view.findViewById(R.id.phoneTextView);
+                    name=view.findViewById(R.id.nameTextView);
 
-                @Override
-                public void onMarkerDrag(Marker marker) {
-                    // TODO Auto-generated method stub
+                    name.setText(currentVenue.getName());
+                    ratingBar.setRating(currentVenue.getRating());
+                    Address.setText(""+currentVenue.getAddress());
+                    if(currentVenue.getPhone().isEmpty()){
+                        Phone.setText("Oups! The phone number is Missing :(");
+                        Phone.setTextSize(8);
+                    }
+                    else
+                        Phone.setText(""+currentVenue.getPhone());
+
+
+
+                    return view;
 
                 }
             });
+
         }
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 12.0f));
 
     }
+
+
 
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -156,8 +194,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 case R.id.navigation_map:
                     return true;
                 case R.id.navigation_dashboard:
-                    Log.w("Message","Dashboard");
-                    return true;
+                    if(user !=null){
+                        Intent in = new Intent(MapsActivity.this,UserDashboardActivity.class);
+                        in.putExtra("lat", latitude);
+                        in.putExtra("lng", longitude);
+                        in.putExtra("name",user.getDisplayName());
+                        in.putExtra("img", String.valueOf(user.getPhotoUrl()));
+                        startActivity(in);
+                        return true;
+                    }else{
+                        //Toast.makeText(MainActivity.this,"You must log in to access the user dashboard",Toast.LENGTH_LONG).show();
+                        Intent nt = new Intent(getApplicationContext(), LoginActivity.class);
+                        nt.putExtra("lng",longitude);
+                        nt.putExtra("lat",latitude);
+                        startActivity(nt);
+                        return true;
+                    }
             }
             return false;
         }
@@ -194,7 +246,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             try {
 
-                URL url = new URL("https://api.foursquare.com/v2/venues/explore?v=20161016&ll="+latitude+","+longitude+"&radius=10000&venuePhotos=1&openNow=1&client_id=VG2QOOJOVR1ALCMP5DBG2QDT3G31U3WJELPPZWUAZP21SFZC&client_secret=SIHMHQV5YEKERQWDP3G5UKWY22RDZ1DOQCKW2STQKYAGDLNA");
+                URL url = new URL("https://api.foursquare.com/v2/venues/explore?v=20161016&ll="+latitude+","+longitude+"&radius=5000&venuePhotos=1&client_id=VG2QOOJOVR1ALCMP5DBG2QDT3G31U3WJELPPZWUAZP21SFZC&client_secret=SIHMHQV5YEKERQWDP3G5UKWY22RDZ1DOQCKW2STQKYAGDLNA");
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
