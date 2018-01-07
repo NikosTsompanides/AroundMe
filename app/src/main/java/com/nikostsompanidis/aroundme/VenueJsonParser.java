@@ -52,7 +52,7 @@ public class VenueJsonParser {
                 image=prefix+"original"+suffix;
                 venueId=venue.optString("id");
                 ven = new Venue(venueId,lat,lng,rating,checkInCount,name,address,isOpen,phone,distance,image);
-                results.add(ven);
+                     results.add(ven);
             }
 
         } catch (JSONException e) {
@@ -81,7 +81,8 @@ public class VenueJsonParser {
                 prefix=currentPhoto.optString("prefix");
                 suffix=currentPhoto.optString("suffix");
                 image=prefix+"original"+suffix;
-                photos.add(image);
+                if(!photos.contains(image))
+                    photos.add(image);
             }
 
         } catch (JSONException e) {
@@ -131,7 +132,8 @@ public class VenueJsonParser {
                 FoursquareUser User = new FoursquareUser(name,surname,userImage);
                 Log.i("test2",""+name+" "+surname+" "+upvotes+" "+downvotes);
                 Tip tip = new Tip(text,tipImage,upvotes,downvotes,createdAt,User);
-                Tips.add(tip);
+                if(!Tips.contains(tip))
+                     Tips.add(tip);
             }
 
         } catch (JSONException e) {
@@ -140,51 +142,6 @@ public class VenueJsonParser {
 
         return Tips;
 
-    }
-
-    public static ArrayList<Venue> getSearchDatafromJson(String jsonString){
-        ArrayList<Venue> results = new ArrayList<>();
-
-        try {
-            JSONObject jsonObject = new JSONObject(jsonString);
-            JSONObject response = jsonObject.getJSONObject("response");
-            JSONArray venues = response.getJSONArray("venues");
-
-
-
-            Venue ven = null;
-
-            for(int i =0; i< venues.length(); i++){
-                String name,address,image,phone,prefix,suffix;
-                int rating,checkInCount,distance;
-                boolean isOpen;
-                double lat,lng;
-                String venueId;
-
-
-                JSONObject venue = venues.optJSONObject(i);
-                name = venue.optString("name");
-                //address=venue.optJSONObject("location").optString("address","Oups ! The address is missing :( !");
-                isOpen=venue.getJSONObject("hours").getBoolean("isOpen");
-                //rating=venue.optInt("rating");
-                //phone=venue.optJSONObject("contact").optString("formattedPhone");
-                lat=venue.optJSONObject("location").optDouble("lat",2.0);
-                lng=venue.optJSONObject("location").optDouble("lng",2);
-                //checkInCount=venue.optJSONObject("stats").optInt("checkinsCount");
-                distance=venue.optJSONObject("location").optInt("distance");
-                /*prefix=venue.optJSONObject("photos").optJSONArray("groups").optJSONObject(0).optJSONArray("items").optJSONObject(0).optString("prefix");
-                suffix=venue.optJSONObject("photos").optJSONArray("groups").optJSONObject(0).optJSONArray("items").optJSONObject(0).optString("suffix");
-                image=prefix+"original"+suffix;*/
-                venueId=venue.optString("id");
-                ven = new Venue(venueId,name,isOpen,distance,lat,lng);
-                results.add(ven);
-            }
-
-        } catch (JSONException e) {
-            Log.e("VenueJsonParser", e.getMessage());
-        }
-
-        return results;
     }
 
 }

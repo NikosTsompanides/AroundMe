@@ -21,8 +21,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="555dp"
                 android:orientation="vertical"
-                tools:layout_editor_absoluteX="8dp"
-                tools:layout_editor_absoluteY="8dp">
+                >
 
                 <RelativeLayout
                     android:layout_width="match_parent"

@@ -8,6 +8,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -80,6 +81,7 @@ public class UserDashboardActivity extends AppCompatActivity {
     private double lati, lngi;
     private boolean isOpen;
     private String venueId;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,9 +92,7 @@ public class UserDashboardActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         mFireBaseAuth=FirebaseAuth.getInstance();
         currentUser = mFireBaseAuth.getCurrentUser();
-
-
-        mFirebaseDatabase = FirebaseDatabase.getInstance("https://aroundme-11c29.firebaseio.com/");
+        mFirebaseDatabase=FirebaseDatabase.getInstance();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -106,25 +106,26 @@ public class UserDashboardActivity extends AppCompatActivity {
                 startActivity(i);
             }
         });
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
+        if(getSupportActionBar()!=null){
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
 
         if (currentUser != null) {
             mDatabaseReference = mFirebaseDatabase.getReference().child("users").child(""+currentUser.getUid()).child("favoritePlaces");
             Log.i("database",""+mDatabaseReference.toString());
 
-
-            ValueEventListener venueListener = new ValueEventListener() {
+            /*ValueEventListener venueListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    // Get Post object and use the values to update the UI
+
                     for(DataSnapshot placesSnapshot:dataSnapshot.getChildren()){
+                        Log.i("datasnapshot",placesSnapshot.toString());
                         Venue venue = placesSnapshot.getValue(Venue.class);
+                        Log.i("VName",venue.getName());
                         places.add(venue);
                     }
-
-
+                    mAdapter.notifyDataSetChanged();
                 }
 
                 @Override
@@ -134,14 +135,52 @@ public class UserDashboardActivity extends AppCompatActivity {
                     // ...
                 }
             };
-            mDatabaseReference.addValueEventListener(venueListener);
+            mDatabaseReference.addValueEventListener(venueListener);*/
+
+            ChildEventListener childEventListener = new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot placesSnapshot, String s) {
+                    Venue venue = placesSnapshot.getValue(Venue.class);
+                    Log.i("venuesnapshot",placesSnapshot.toString());
+                    places.add(venue);
+                    mAdapter.notifyDataSetChanged();
+
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                    mAdapter.notifyDataSetChanged();
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot placesSnapshot) {
+                    Venue venue = placesSnapshot.getValue(Venue.class);
+                    places.remove(venue);
+                    mAdapter.notifyDataSetChanged();
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                    mAdapter.notifyDataSetChanged();
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            };
+            mDatabaseReference.addChildEventListener(childEventListener);
         }
 
 
         noPlaces = findViewById(R.id.noPlacesTextView);
         userImage = findViewById(R.id.userImageView);
         favoritePlacesRecyclerView = (RecyclerView) findViewById(R.id.favoritePlacesRecyclerView);
+        swipeRefreshLayout= (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
 
+
+        if(places.isEmpty()) Log.i("places","places not added");
+        else for(Venue v : places) Log.i("places",v.getName());
 
 
         mAdapter = new PlacesAdapter(places);
@@ -216,10 +255,21 @@ public class UserDashboardActivity extends AppCompatActivity {
             }
         });
 
+        toolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/jpeg");
+                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+                startActivityForResult(Intent.createChooser(intent, "Complete action using"), RC_PHOTO_PICKER);
+            }
+        });
+
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation3);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
         navigation.getMenu().getItem(2).setChecked(true);
+
 
 
     }
@@ -259,22 +309,25 @@ public class UserDashboardActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == RC_PHOTO_PICKER && resultCode == RESULT_OK) {
             Uri selectedImage = data.getData();
-            StorageReference photoRef = mUserPhotosStorageReference.child(selectedImage.getLastPathSegment());
-            StorageMetadata metadata = new StorageMetadata.Builder()
-                    .setContentType("image/jpg")
-                    .setCustomMetadata("user_id", currentUser.getUid())
-                    .build();
-            photoRef.putFile(selectedImage).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Uri downloadUri = taskSnapshot.getDownloadUrl();
-                    Glide.with(UserDashboardActivity.this)
-                            .load(downloadUri)
-                            .into(userImage);
-                }
-            });
-            photoRef.updateMetadata(metadata);
-            Toast.makeText(UserDashboardActivity.this, "Image has change succesfully !", Toast.LENGTH_SHORT).show();
+            if(mUserPhotosStorageReference!=null){
+                StorageReference photoRef = mUserPhotosStorageReference.child(selectedImage.getLastPathSegment());
+                StorageMetadata metadata = new StorageMetadata.Builder()
+                        .setContentType("image/jpg")
+                        .setCustomMetadata("user_id", currentUser.getUid())
+                        .build();
+                photoRef.putFile(selectedImage).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Uri downloadUri = taskSnapshot.getDownloadUrl();
+                        Glide.with(UserDashboardActivity.this)
+                                .load(downloadUri)
+                                .into(userImage);
+                    }
+                });
+                photoRef.updateMetadata(metadata);
+                Toast.makeText(UserDashboardActivity.this, "Image has change succesfully !", Toast.LENGTH_SHORT).show();
+            }
+
         }
     }
 

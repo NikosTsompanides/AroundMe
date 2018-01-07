@@ -57,17 +57,20 @@ public class InitialFullscreenActivity extends AppCompatActivity {
         }
         getLocation();
 
-        Log.i("lat",latitude.toString());
-        Log.i("lng",longitude.toString());
 
     }
 
 
     public boolean checkForInternetAccess(){
+        NetworkInfo netInfo;
         ConnectivityManager cm =
                 (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnectedOrConnecting();
+        if(cm!=null){
+             netInfo = cm.getActiveNetworkInfo();
+            return netInfo != null && netInfo.isConnectedOrConnecting();
+        }
+        else return false;
+
     }
 
     public void getLocation(){

@@ -2,6 +2,8 @@ package com.nikostsompanidis.aroundme;
 
 import android.app.SearchManager;
 import android.content.Intent;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
@@ -24,6 +26,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 public class SearchActivity extends AppCompatActivity {
@@ -154,7 +158,8 @@ public class SearchActivity extends AppCompatActivity {
 
             try {
 
-                URL url = new URL("https://api.foursquare.com/v2/venues/explore?v=20171123&ll=" + latitude + "," + longitude +"&venuePhotos=1&client_id=VG2QOOJOVR1ALCMP5DBG2QDT3G31U3WJELPPZWUAZP21SFZC&client_secret=SIHMHQV5YEKERQWDP3G5UKWY22RDZ1DOQCKW2STQKYAGDLNA");
+
+                URL url = new URL("https://api.foursquare.com/v2/venues/explore?v=20171123&near=" + latitude + "," + longitude +"&venuePhotos=1&client_id=VG2QOOJOVR1ALCMP5DBG2QDT3G31U3WJELPPZWUAZP21SFZC&client_secret=SIHMHQV5YEKERQWDP3G5UKWY22RDZ1DOQCKW2STQKYAGDLNA");
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");

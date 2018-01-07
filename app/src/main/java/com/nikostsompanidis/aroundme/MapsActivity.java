@@ -236,6 +236,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         private ArrayList<Venue> fetchStoresData() {
 
 
+
+
             // These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.
             HttpURLConnection urlConnection = null;
@@ -246,7 +248,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             try {
 
-                URL url = new URL("https://api.foursquare.com/v2/venues/explore?v=20161016&ll="+latitude+","+longitude+"&radius=5000&venuePhotos=1&client_id=VG2QOOJOVR1ALCMP5DBG2QDT3G31U3WJELPPZWUAZP21SFZC&client_secret=SIHMHQV5YEKERQWDP3G5UKWY22RDZ1DOQCKW2STQKYAGDLNA");
+                URL url = new URL("https://api.foursquare.com/v2/venues/explore?v=20171123&ll="+latitude+","+longitude+"&venuePhotos=1&client_id=VG2QOOJOVR1ALCMP5DBG2QDT3G31U3WJELPPZWUAZP21SFZC&client_secret=SIHMHQV5YEKERQWDP3G5UKWY22RDZ1DOQCKW2STQKYAGDLNA");
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
