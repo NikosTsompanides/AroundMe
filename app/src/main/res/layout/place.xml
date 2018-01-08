@@ -13,6 +13,7 @@
         android:layout_gravity="center"
         card_view:cardBackgroundColor="#ffff"
         card_view:cardCornerRadius="5dp"
+        card_view:cardElevation="2dp"
         card_view:cardUseCompatPadding="true">
 
         <LinearLayout
@@ -29,10 +30,7 @@
                     android:id="@+id/placeImage"
                     android:layout_width="70dp"
                     android:layout_height="70dp"
-                    android:scaleType="fitCenter"
-                    app:riv_border_color="#ffffff"
-                    app:riv_border_width="1dip"
-                    app:riv_corner_radius="3dip"
+                    android:scaleType="centerCrop"
                     app:riv_mutate_background="true"
                     app:riv_tile_mode="repeat" />
 

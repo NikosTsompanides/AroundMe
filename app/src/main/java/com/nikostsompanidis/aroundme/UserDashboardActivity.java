@@ -1,6 +1,7 @@
 package com.nikostsompanidis.aroundme;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -27,6 +28,8 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -35,6 +38,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
@@ -61,7 +65,6 @@ public class UserDashboardActivity extends AppCompatActivity {
     private String name, photoUrl;
     private ImageView userImage;
     private RecyclerView favoritePlacesRecyclerView;
-    private PlacesAdapter mAdapter;
     private static final int RC_PHOTO_PICKER = 2;
     private FirebaseStorage mUserPhotosFirebaseStorage;
     private StorageReference mUserPhotosStorageReference;
@@ -82,6 +85,8 @@ public class UserDashboardActivity extends AppCompatActivity {
     private boolean isOpen;
     private String venueId;
     private SwipeRefreshLayout swipeRefreshLayout;
+    Query query;
+    private FirebaseRecyclerAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,93 +106,56 @@ public class UserDashboardActivity extends AppCompatActivity {
                 AuthUI.getInstance().signOut(UserDashboardActivity.this);
                 Toast.makeText(UserDashboardActivity.this, "You just signed out", Toast.LENGTH_SHORT).show();
                 Intent i = new Intent(UserDashboardActivity.this, MainActivity.class);
-                i.putExtra("lat", latitude);
-                i.putExtra("lng", longitude);
                 startActivity(i);
             }
         });
         if(getSupportActionBar()!=null){
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        SharedPreferences prefs = getSharedPreferences(InitialFullscreenActivity.MY_PREFS_NAME, MODE_PRIVATE);
+        latitude=prefs.getFloat("lat",0);
+        longitude=prefs.getFloat("lng",0);
 
 
         if (currentUser != null) {
-            mDatabaseReference = mFirebaseDatabase.getReference().child("users").child(""+currentUser.getUid()).child("favoritePlaces");
-            Log.i("database",""+mDatabaseReference.toString());
 
-            /*ValueEventListener venueListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-
-                    for(DataSnapshot placesSnapshot:dataSnapshot.getChildren()){
-                        Log.i("datasnapshot",placesSnapshot.toString());
-                        Venue venue = placesSnapshot.getValue(Venue.class);
-                        Log.i("VName",venue.getName());
-                        places.add(venue);
-                    }
-                    mAdapter.notifyDataSetChanged();
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    // Getting Post failed, log a message
-                    Log.w("", "loadPost:onCancelled", databaseError.toException());
-                    // ...
-                }
-            };
-            mDatabaseReference.addValueEventListener(venueListener);*/
-
-            ChildEventListener childEventListener = new ChildEventListener() {
-                @Override
-                public void onChildAdded(DataSnapshot placesSnapshot, String s) {
-                    Venue venue = placesSnapshot.getValue(Venue.class);
-                    Log.i("venuesnapshot",placesSnapshot.toString());
-                    places.add(venue);
-                    mAdapter.notifyDataSetChanged();
-
-                }
-
-                @Override
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                    mAdapter.notifyDataSetChanged();
-                }
-
-                @Override
-                public void onChildRemoved(DataSnapshot placesSnapshot) {
-                    Venue venue = placesSnapshot.getValue(Venue.class);
-                    places.remove(venue);
-                    mAdapter.notifyDataSetChanged();
-                }
-
-                @Override
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                    mAdapter.notifyDataSetChanged();
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            };
-            mDatabaseReference.addChildEventListener(childEventListener);
+            query= mFirebaseDatabase.getReference().child("users").child(""+currentUser.getUid()).child("favoritePlaces") ;
+            Log.i("query",query.toString());
         }
+
+
+        FirebaseRecyclerOptions<Venue> options =
+                new FirebaseRecyclerOptions.Builder<Venue>()
+                        .setQuery(query, Venue.class)
+                        .build();
+
+        adapter = new FirebaseRecyclerAdapter<Venue, MyViewHolder>(options) {
+            @Override
+            public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                View view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.place, parent, false);
+                return new MyViewHolder(view);
+            }
+
+            @Override
+            protected void onBindViewHolder(MyViewHolder holder, int position, Venue venue) {
+                holder.name.setText(venue.getName());
+                Glide.with(UserDashboardActivity.this)
+                        .load(venue.getImage())
+                        .into(holder.placeImage);
+                holder.rating.setRating(venue.getRating());
+            }
+        };
 
 
         noPlaces = findViewById(R.id.noPlacesTextView);
         userImage = findViewById(R.id.userImageView);
+
         favoritePlacesRecyclerView = (RecyclerView) findViewById(R.id.favoritePlacesRecyclerView);
-        swipeRefreshLayout= (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
-
-
-        if(places.isEmpty()) Log.i("places","places not added");
-        else for(Venue v : places) Log.i("places",v.getName());
-
-
-        mAdapter = new PlacesAdapter(places);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         favoritePlacesRecyclerView.setLayoutManager(mLayoutManager);
         favoritePlacesRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        favoritePlacesRecyclerView.setAdapter(mAdapter);
+        favoritePlacesRecyclerView.setAdapter(adapter);
         favoritePlacesRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this,favoritePlacesRecyclerView, new RecyclerItemClickListener.OnItemClickListener(){
             @Override
             public void onItemClick(View view, int position) {
@@ -221,16 +189,14 @@ public class UserDashboardActivity extends AppCompatActivity {
 
             @Override
             public void onLongItemClick(View view, int position) {
-                // do whatever
             }
         }));
+
 
 
         mUserPhotosFirebaseStorage = FirebaseStorage.getInstance();
         mUserPhotosStorageReference = mUserPhotosFirebaseStorage.getReference().child("user_photos");
         if (extras != null) {
-            latitude = extras.getDouble("lat");
-            longitude = extras.getDouble("lng");
             if (extras.getString("name") != null && extras.getString("img") != null) {
                 name = extras.getString("name");
                 photoUrl = extras.getString("img");
@@ -274,9 +240,36 @@ public class UserDashboardActivity extends AppCompatActivity {
 
     }
 
+    public class MyViewHolder extends RecyclerView.ViewHolder {
+
+        public ImageView placeImage;
+        public TextView name;
+        public RatingBar rating;
+
+
+        public MyViewHolder(View view) {
+            super(view);
+            name = (TextView) view.findViewById(R.id.nameTextView);
+            placeImage = (ImageView) view.findViewById(R.id.placeImage);
+            rating=(RatingBar) view.findViewById(R.id.ratingBarFavPlace);
+        }
+    }
+
     @Override
     public void onBackPressed() {
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        adapter.startListening();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        adapter.stopListening();
     }
 
     protected BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -287,14 +280,10 @@ public class UserDashboardActivity extends AppCompatActivity {
             switch (item.getItemId()) {
                 case R.id.navigation_search:
                     Intent i = new Intent(getApplicationContext(), MainActivity.class);
-                    i.putExtra("lat", latitude);
-                    i.putExtra("lng", longitude);
                     startActivity(i);
                     return true;
                 case R.id.navigation_map:
                     Intent in = new Intent(getApplicationContext(), MapsActivity.class);
-                    in.putExtra("lat", latitude);
-                    in.putExtra("lng", longitude);
                     startActivity(in);
                     return true;
                 case R.id.navigation_dashboard:
@@ -331,64 +320,4 @@ public class UserDashboardActivity extends AppCompatActivity {
         }
     }
 
-    public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.MyViewHolder> {
-
-        private List<Venue> list;
-
-        public class MyViewHolder extends RecyclerView.ViewHolder {
-
-            public ImageView placeImage;
-            public TextView name;
-            public RatingBar rating;
-
-
-            public MyViewHolder(View view) {
-                super(view);
-                name = (TextView) view.findViewById(R.id.nameTextView);
-                placeImage = (ImageView) view.findViewById(R.id.placeImage);
-                rating=(RatingBar) view.findViewById(R.id.ratingBarFavPlace);
-            }
-        }
-
-
-        public PlacesAdapter(List<Venue> places) {
-            this.list = places;
-        }
-
-        @Override
-        public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View itemView = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.place, parent, false);
-
-            return new MyViewHolder(itemView);
-        }
-
-        @Override
-        public void onBindViewHolder(MyViewHolder holder, int position) {
-            list.get(position);
-            holder.name.setText(list.get(position).getName());
-            Glide.with(UserDashboardActivity.this)
-                    .load(list.get(position).getImage())
-                    .into(holder.placeImage);
-            holder.rating.setRating(list.get(position).getRating());
-        }
-
-        @Override
-        public int getItemCount() {
-            return list.size();
-        }
-
-        public void clear() {
-            // TODO Auto-generated method stub
-            list.clear();
-
-        }
-
-        private void addItem(Venue place) {
-            list.add(place);
-            this.notifyDataSetChanged();
-        }
-
-
-    }
 }

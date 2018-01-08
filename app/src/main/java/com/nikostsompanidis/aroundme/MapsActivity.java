@@ -2,6 +2,7 @@ package com.nikostsompanidis.aroundme;
 
 import android.app.FragmentManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.location.Address;
@@ -46,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
+import java.util.jar.Attributes;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -64,6 +66,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private RatingBar ratingBar;
     private TextView name, Address, Phone, Distance;
     private ImageView imgView;
+
+    private int rating, chekInsCount, distance;
+    private String Name, address, phone, image;
+    private double lati, lngi;
+    private boolean isOpen;
+    private String venueId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,13 +97,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         navigation.getMenu().getItem(1).setChecked(true);
 
-        Bundle extras = getIntent().getExtras();
 
-        if (extras != null) {
-            latitude = extras.getDouble("lat");
-            longitude = extras.getDouble("lng");
-        }else
-            Toast.makeText(this,"Can't Find Any Location",Toast.LENGTH_SHORT);
+        SharedPreferences prefs = getSharedPreferences(InitialFullscreenActivity.MY_PREFS_NAME, MODE_PRIVATE);
+        latitude=prefs.getFloat("lat",0);
+        longitude=prefs.getFloat("lng",0);
 
 
         FetchVenuesTask placesTask = new FetchVenuesTask();
@@ -153,18 +158,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Address = (TextView)  view.findViewById(R.id.addressTextView);
                     Phone = (TextView)  view.findViewById(R.id.phoneTextView);
                     name=view.findViewById(R.id.nameTextView);
+                    if(currentVenue!=null){
 
-                    name.setText(currentVenue.getName());
-                    ratingBar.setRating(currentVenue.getRating());
-                    Address.setText(""+currentVenue.getAddress());
-                    if(currentVenue.getPhone().isEmpty()){
-                        Phone.setText("Oups! The phone number is Missing :(");
-                        Phone.setTextSize(8);
+                        name.setText(currentVenue.getName());
+                        ratingBar.setRating(currentVenue.getRating());
+                        Address.setText(""+currentVenue.getAddress());
+                        if(currentVenue.getPhone().isEmpty()){
+                            Phone.setText("Oups! The phone number is Missing :(");
+                            Phone.setTextSize(8);
+                        }
+                        else
+                            Phone.setText(""+currentVenue.getPhone());
+
                     }
-                    else
-                        Phone.setText(""+currentVenue.getPhone());
-
-
 
                     return view;
 
@@ -173,11 +179,46 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         }
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 12.0f));
+        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                Venue currentVenue = (Venue) marker.getTag();
+                address = currentVenue.getAddress();
+                rating =currentVenue.getRating();
+                lati =currentVenue.getLat();
+                lngi = currentVenue.getLng();
+                Name = currentVenue.getName();
+                chekInsCount =currentVenue.getChekInsCount();
 
+                isOpen = currentVenue.isOpen();
+                phone = currentVenue.getPhone();
+                distance =currentVenue.getDistance();
+                image =currentVenue.getImage();
+                venueId=currentVenue.getVenueId();
+
+                Intent i = new Intent(getBaseContext(), DetailsActivity.class);
+                i.putExtra("name", Name);
+                i.putExtra("checkInCount", chekInsCount);
+                i.putExtra("isOpen", isOpen);
+                i.putExtra("rating", rating);
+                i.putExtra("address", address);
+                i.putExtra("phone", phone);
+                i.putExtra("lat", lati);
+                i.putExtra("lng", lngi);
+                i.putExtra("distance", distance);
+                i.putExtra("image", image);
+                i.putExtra("id",venueId);
+                startActivity(i);
+            }
+        });
+
+        mMap.setOnInfoWindowLongClickListener(new GoogleMap.OnInfoWindowLongClickListener() {
+            @Override
+            public void onInfoWindowLongClick(Marker marker) {
+                marker.hideInfoWindow();
+            }
+        });
     }
-
-
-
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -187,8 +228,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             switch (item.getItemId()) {
                 case R.id.navigation_search:
                     Intent i = new Intent(getApplicationContext(),MainActivity.class);
-                    i.putExtra("lat",latitude);
-                    i.putExtra("lng",longitude);
+
                     startActivity(i);
                     return true;
                 case R.id.navigation_map:
@@ -196,8 +236,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 case R.id.navigation_dashboard:
                     if(user !=null){
                         Intent in = new Intent(MapsActivity.this,UserDashboardActivity.class);
-                        in.putExtra("lat", latitude);
-                        in.putExtra("lng", longitude);
                         in.putExtra("name",user.getDisplayName());
                         in.putExtra("img", String.valueOf(user.getPhotoUrl()));
                         startActivity(in);
@@ -205,8 +243,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }else{
                         //Toast.makeText(MainActivity.this,"You must log in to access the user dashboard",Toast.LENGTH_LONG).show();
                         Intent nt = new Intent(getApplicationContext(), LoginActivity.class);
-                        nt.putExtra("lng",longitude);
-                        nt.putExtra("lat",latitude);
                         startActivity(nt);
                         return true;
                     }

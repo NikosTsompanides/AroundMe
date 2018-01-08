@@ -43,6 +43,7 @@ public class InitialFullscreenActivity extends AppCompatActivity {
     List<Address> addresses = new ArrayList<Address>();
     private boolean hasInternetAccess;
 
+    static final String  MY_PREFS_NAME="latlng";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +57,7 @@ public class InitialFullscreenActivity extends AppCompatActivity {
             }while(!hasInternetAccess);
         }
         getLocation();
+
 
 
     }
@@ -99,9 +101,12 @@ public class InitialFullscreenActivity extends AppCompatActivity {
 
             if(!latitude.isNaN() && !longitude.isNaN()){
 
+                SharedPreferences.Editor editor = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE).edit();
+                editor.putFloat("lat", Float.parseFloat(""+latitude));
+                editor.putFloat("lng", Float.parseFloat(""+longitude));
+                editor.apply();
+
                 Intent i = new Intent(InitialFullscreenActivity.this,MainActivity.class);
-                i.putExtra("lat",latitude);
-                i.putExtra("lng",longitude);
                 startActivity(i);
 
             }

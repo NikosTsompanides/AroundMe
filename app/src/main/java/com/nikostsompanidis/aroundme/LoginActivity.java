@@ -2,6 +2,7 @@ package com.nikostsompanidis.aroundme;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -62,12 +63,9 @@ public class LoginActivity extends AppCompatActivity {
         FirebaseApp.initializeApp(this);
 
 
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            latitude = extras.getDouble("lat");
-            longitude = extras.getDouble("lng");
-
-        }
+        SharedPreferences prefs = getSharedPreferences(InitialFullscreenActivity.MY_PREFS_NAME, MODE_PRIVATE);
+        latitude=prefs.getFloat("lat",0);
+        longitude=prefs.getFloat("lng",0);
 
         mFirebaseDatabase=FirebaseDatabase.getInstance("https://aroundme-11c29.firebaseio.com/");
         mDatabaseReference=mFirebaseDatabase.getReference().child("users");

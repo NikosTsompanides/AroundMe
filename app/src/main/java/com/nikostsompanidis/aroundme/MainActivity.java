@@ -107,6 +107,10 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        SharedPreferences prefs = getSharedPreferences(InitialFullscreenActivity.MY_PREFS_NAME, MODE_PRIVATE);
+        latitude=prefs.getFloat("lat",0);
+        longitude=prefs.getFloat("lng",0);
+
         topPicksTextView=findViewById(R.id.topPicksTextView);
         foodTextView=findViewById(R.id.BreakfastTextView);
         coffeeTextView=findViewById(R.id.dinnerTextView);
@@ -135,12 +139,12 @@ public class MainActivity extends AppCompatActivity
                 .load(user.getPhotoUrl())
                 .into(usrImageView);
 
-        Bundle extras = getIntent().getExtras();
+        /*Bundle extras = getIntent().getExtras();
         if (extras != null) {
             latitude = extras.getDouble("lat");
             longitude = extras.getDouble("lng");
         } else
-            Toast.makeText(this, "Can't Find Any Location", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Can't Find Any Location", Toast.LENGTH_SHORT).show();*/
 
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -344,8 +348,6 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_user) {
             Intent i = new Intent(getApplicationContext(), LoginActivity.class);
-            i.putExtra("lng",longitude);
-            i.putExtra("lat",latitude);
             startActivity(i);
 
             return true;
@@ -353,8 +355,6 @@ public class MainActivity extends AppCompatActivity
 
             if(user !=null){
                 Intent in = new Intent(MainActivity.this,UserDashboardActivity.class);
-                in.putExtra("lat", latitude);
-                in.putExtra("lng", longitude);
                 in.putExtra("name",user.getDisplayName());
                 in.putExtra("img", String.valueOf(user.getPhotoUrl()));
                 startActivity(in);
@@ -362,8 +362,6 @@ public class MainActivity extends AppCompatActivity
             }else{
                 //Toast.makeText(MainActivity.this,"You must log in to access the user dashboard",Toast.LENGTH_LONG).show();
                 Intent nt = new Intent(getApplicationContext(), LoginActivity.class);
-                nt.putExtra("lng",longitude);
-                nt.putExtra("lat",latitude);
                 startActivity(nt);
                 return true;
             }
@@ -388,15 +386,11 @@ public class MainActivity extends AppCompatActivity
                     return true;
                 case R.id.navigation_map:
                     Intent i = new Intent(getApplicationContext(), MapsActivity.class);
-                    i.putExtra("lat", latitude);
-                    i.putExtra("lng", longitude);
                     startActivity(i);
                     return true;
                 case R.id.navigation_dashboard:
                    if(user !=null){
                        Intent in = new Intent(MainActivity.this,UserDashboardActivity.class);
-                       in.putExtra("lat", latitude);
-                       in.putExtra("lng", longitude);
                        in.putExtra("name",user.getDisplayName());
                        in.putExtra("img", String.valueOf(user.getPhotoUrl()));
                        startActivity(in);
@@ -404,8 +398,6 @@ public class MainActivity extends AppCompatActivity
                    }else{
                        //Toast.makeText(MainActivity.this,"You must log in to access the user dashboard",Toast.LENGTH_LONG).show();
                        Intent nt = new Intent(getApplicationContext(), LoginActivity.class);
-                       nt.putExtra("lng",longitude);
-                       nt.putExtra("lat",latitude);
                        startActivity(nt);
                        return true;
                    }
