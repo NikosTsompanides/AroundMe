@@ -313,7 +313,7 @@ public class DetailsActivity extends AppCompatActivity  {
 
             try {
 
-                URL url = new URL("https://api.foursquare.com/v2/venues/"+venueId+"/photos?v=20161016&limit=50&client_id=VG2QOOJOVR1ALCMP5DBG2QDT3G31U3WJELPPZWUAZP21SFZC&client_secret=SIHMHQV5YEKERQWDP3G5UKWY22RDZ1DOQCKW2STQKYAGDLNA");
+                URL url = new URL("https://api.foursquare.com/v2/venues/"+venueId+"/photos?v=20161016&limit=50&client_id="+MainActivity.CLIENT_ID+"&client_secret="+MainActivity.CLIENT_SECRET+"");
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
@@ -394,7 +394,7 @@ public class DetailsActivity extends AppCompatActivity  {
 
             try {
 
-                URL url = new URL("https://api.foursquare.com/v2/venues/"+venueId+"/tips?v=20161016&limit=30&sort=popular&client_id=VG2QOOJOVR1ALCMP5DBG2QDT3G31U3WJELPPZWUAZP21SFZC&client_secret=SIHMHQV5YEKERQWDP3G5UKWY22RDZ1DOQCKW2STQKYAGDLNA");
+                URL url = new URL("https://api.foursquare.com/v2/venues/"+venueId+"/tips?v=20161016&limit=30&sort=popular&client_id="+MainActivity.CLIENT_ID+"&client_secret="+MainActivity.CLIENT_SECRET+"");
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");

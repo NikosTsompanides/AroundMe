@@ -100,6 +100,11 @@ public class MainActivity extends AppCompatActivity
     public MainActivity() {
     }
 
+
+    public static final String CLIENT_ID="ZJBUCXJW32DBIEMVDIVPNL1RAL41YS4RS3VGHY1QC0PX1H3P";
+    public static final String CLIENT_SECRET="CD00SDELPNIQ3PJMADWOSYEERKEOVZ25U4MZ1UIWWOWTTKK2";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -535,7 +540,7 @@ public class MainActivity extends AppCompatActivity
 
             try {
 
-                URL url = new URL("https://api.foursquare.com/v2/venues/explore?v=20171123&ll=" + latitude + "," + longitude + "&section=" + section + "&radius=2000&limit=10&venuePhotos=1&client_id=VG2QOOJOVR1ALCMP5DBG2QDT3G31U3WJELPPZWUAZP21SFZC&client_secret=SIHMHQV5YEKERQWDP3G5UKWY22RDZ1DOQCKW2STQKYAGDLNA");
+                URL url = new URL("https://api.foursquare.com/v2/venues/explore?v=20171123&ll=" + latitude + "," + longitude + "&section=" + section + "&radius=2000&limit=10&venuePhotos=1&client_id="+CLIENT_ID+"&client_secret="+CLIENT_SECRET+"");
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
