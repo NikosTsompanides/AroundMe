@@ -112,9 +112,13 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // Get the longitude and latitude of user from shared preferences
+
         SharedPreferences prefs = getSharedPreferences(InitialFullscreenActivity.MY_PREFS_NAME, MODE_PRIVATE);
         latitude=prefs.getFloat("lat",0);
         longitude=prefs.getFloat("lng",0);
+
+        // UI variables initialization/connection with activity_main xml
 
         topPicksTextView=findViewById(R.id.topPicksTextView);
         foodTextView=findViewById(R.id.BreakfastTextView);
@@ -127,6 +131,7 @@ public class MainActivity extends AppCompatActivity
         button= findViewById(R.id.searchButton);
 
 
+        // Firebase Authentication using Firebase UI
         mFireBaseDatabase=FirebaseDatabase.getInstance("https://aroundme-11c29.firebaseio.com/");
         mDatabaseReference=mFireBaseDatabase.getReference().child("users");
         mFireBaseAuth = FirebaseAuth.getInstance();
@@ -138,20 +143,14 @@ public class MainActivity extends AppCompatActivity
         };
         mFireBaseAuth.addAuthStateListener(mAuthStateListener);
 
-
+        // TODO : Fix this functionality
         if(user!=null)
             Glide.with(this)
                 .load(user.getPhotoUrl())
                 .into(usrImageView);
 
-        /*Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            latitude = extras.getDouble("lat");
-            longitude = extras.getDouble("lng");
-        } else
-            Toast.makeText(this, "Can't Find Any Location", Toast.LENGTH_SHORT).show();*/
 
-
+        // Drawer , NavigationView, BottomNavigation
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -173,6 +172,7 @@ public class MainActivity extends AppCompatActivity
         }
 
 
+        // Button Listener for SearchActivity Listener
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -183,6 +183,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        // Adding the data from Foursqaure API to Arryaylists
         foodShops = getVenues("food");
         coffeeShops = getVenues("coffee");
         bars = getVenues("drinks");
@@ -190,127 +191,20 @@ public class MainActivity extends AppCompatActivity
         topPicks = getVenues("topPicks");
         outdoors = getVenues("outdoors");
 
-        if(!topPicks.isEmpty()){
-            topPicksTextView.setVisibility(View.VISIBLE);
-            horizontal_top_picks_recycler_view = (RecyclerView) findViewById(R.id.horizontal_top_picks_recycler_view);
-            horizontal_top_picks_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_top_picks_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
-                @Override
-                public void onItemClick(View view, int position) {
-                    goToVenueDetailsActivity(position, topPicks);
-                }
 
-                @Override
-                public void onLongItemClick(View view, int position) {
-                    // do whatever
-                }
-            }));
-            topPicksAdapter = new HorizontalAdapter(topPicks);
-            layoutManager(horizontal_top_picks_recycler_view, topPicksAdapter);
+        // Filling of the Recycler views in the MainActivity
 
-        }
+        fillRecyclerView(topPicksTextView,horizontal_top_picks_recycler_view,R.id.horizontal_top_picks_recycler_view,topPicksAdapter,topPicks);
 
-        if(!foodShops.isEmpty()){
-            foodTextView.setVisibility(View.VISIBLE);
-            horizontal_food_recycler_view = (RecyclerView) findViewById(R.id.horizontal_food_recycler_view);
-            horizontal_food_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_food_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
-                @Override
-                public void onItemClick(View view, int position) {
-                    goToVenueDetailsActivity(position, foodShops);
-                }
+        fillRecyclerView(foodTextView,horizontal_food_recycler_view,R.id.horizontal_food_recycler_view,foodAdapter,foodShops);
 
-                @Override
-                public void onLongItemClick(View view, int position) {
-                    // do whatever
-                }
-            }));
+        fillRecyclerView(coffeeTextView,horizontal_coffee_recycler_view,R.id.horizontal_coffee_recycler_view,coffeeAdapter,coffeeShops);
 
-            foodAdapter = new HorizontalAdapter(foodShops);
-            layoutManager(horizontal_food_recycler_view, foodAdapter);
+        fillRecyclerView(barsTextView,horizontal_drinks_recycler_view,R.id.horizontal_drinks_recycler_view,drinksAdapter,bars);
 
-        }
+        fillRecyclerView(artsTextView,horizontal_arts_recycler_view,R.id.horizontal_arts_recycler_view,artsAdapetr,arts);
 
-
-        if(!coffeeShops.isEmpty()){
-            coffeeTextView.setVisibility(View.VISIBLE);
-            horizontal_coffee_recycler_view = (RecyclerView) findViewById(R.id.horizontal_coffee_recycler_view);
-            horizontal_coffee_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_coffee_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
-                @Override
-                public void onItemClick(View view, int position) {
-                    goToVenueDetailsActivity(position, coffeeShops);
-                }
-
-                @Override
-                public void onLongItemClick(View view, int position) {
-                    // do whatever
-                }
-            }));
-            coffeeAdapter = new HorizontalAdapter(coffeeShops);
-            layoutManager(horizontal_coffee_recycler_view, coffeeAdapter);
-
-        }
-
-
-        if(!bars.isEmpty()){
-            barsTextView.setVisibility(View.VISIBLE);
-            horizontal_drinks_recycler_view = (RecyclerView) findViewById(R.id.horizontal_drinks_recycler_view);
-            horizontal_drinks_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_drinks_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
-                @Override
-                public void onItemClick(View view, int position) {
-
-                    goToVenueDetailsActivity(position, bars);
-                }
-
-                @Override
-                public void onLongItemClick(View view, int position) {
-                    // do whatever
-                }
-            }));
-            drinksAdapter = new HorizontalAdapter(bars);
-            layoutManager(horizontal_drinks_recycler_view, drinksAdapter);
-
-        }
-
-
-        if(!arts.isEmpty()){
-            artsTextView.setVisibility(View.VISIBLE);
-            horizontal_arts_recycler_view = (RecyclerView) findViewById(R.id.horizontal_arts_recycler_view);
-            horizontal_arts_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_arts_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
-                @Override
-                public void onItemClick(View view, int position) {
-
-                    goToVenueDetailsActivity(position, arts);
-
-                }
-
-                @Override
-                public void onLongItemClick(View view, int position) {
-                    // do whatever
-                }
-            }));
-            artsAdapetr = new HorizontalAdapter(arts);
-            layoutManager(horizontal_arts_recycler_view, artsAdapetr);
-
-        }
-
-
-        if(!outdoors.isEmpty()){
-            outdoorsTextView.setVisibility(View.VISIBLE);
-            horizontal_outdoors_recycler_view = (RecyclerView) findViewById(R.id.horizontal_outdoors_recycler_view);
-            horizontal_outdoors_recycler_view.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), horizontal_outdoors_recycler_view, new RecyclerItemClickListener.OnItemClickListener() {
-                @Override
-                public void onItemClick(View view, int position) {
-                    goToVenueDetailsActivity(position, outdoors);
-                }
-
-                @Override
-                public void onLongItemClick(View view, int position) {
-                    // do whatever
-                }
-            }));
-            outdoorsAdapter = new HorizontalAdapter(outdoors);
-            layoutManager(horizontal_outdoors_recycler_view, outdoorsAdapter);
-
-        }
+        fillRecyclerView(outdoorsTextView,horizontal_outdoors_recycler_view,R.id.horizontal_outdoors_recycler_view,outdoorsAdapter,outdoors);
 
 
     }
@@ -641,6 +535,27 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
         return list;
+    }
+
+    public void fillRecyclerView(TextView sectionTextView, RecyclerView sectionRecyclerView, int sectionRecyclerViewId, HorizontalAdapter sectionAdapter, final ArrayList sectionList){
+        if(!sectionList.isEmpty()){
+            sectionTextView.setVisibility(View.VISIBLE);
+            sectionRecyclerView = (RecyclerView) findViewById(sectionRecyclerViewId);
+            sectionRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getBaseContext(), sectionRecyclerView, new RecyclerItemClickListener.OnItemClickListener() {
+                @Override
+                public void onItemClick(View view, int position) {
+                    goToVenueDetailsActivity(position, sectionList);
+                }
+
+                @Override
+                public void onLongItemClick(View view, int position) {
+                    // do whatever
+                }
+            }));
+            sectionAdapter = new HorizontalAdapter(sectionList);
+            layoutManager(sectionRecyclerView, sectionAdapter);
+
+        }
     }
 
 

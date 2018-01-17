@@ -42,7 +42,7 @@ public class InitialFullscreenActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+        // TODO: Change this fucking stupid but working practise
         GPSTracker tracker = new GPSTracker(this);
         if (!tracker.canGetLocation()) {
             tracker.showSettingsAlert();
