@@ -101,8 +101,8 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public static final String CLIENT_ID="ZJBUCXJW32DBIEMVDIVPNL1RAL41YS4RS3VGHY1QC0PX1H3P";
-    public static final String CLIENT_SECRET="CD00SDELPNIQ3PJMADWOSYEERKEOVZ25U4MZ1UIWWOWTTKK2";
+    public static final String CLIENT_ID=forsquare_id;
+    public static final String CLIENT_SECRET=forsquare_secret;
 
 
     @Override
